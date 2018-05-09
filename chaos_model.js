@@ -10,6 +10,9 @@ const c2 = 0.72;
 const A = 0.5;
 
 module.exports = {
+    ukX1: (k, x, u) => {
+        return (k <= 1) ? x[0] : f.round(1.76 -  x[1] * x[1] - 0.1 * x[2] + u,6);
+    },
     X1: (k, x) => {
         return (k <= 1) ? x[0] : f.round(1.76 -  x[1] * x[1] - 0.1 * x[2],6);
     },

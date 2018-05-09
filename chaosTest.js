@@ -1,4 +1,5 @@
 let chaos = require("./chaos_model.js");
+let f = require('float');
 
 
 let X = [0.5, -0.3, 0.4];
@@ -14,14 +15,14 @@ let u = 0;
 
 for (let i = 1; i <= N; i++) {
 
-    u = chaos.createUk(X,Y);
+    u = chaos.createUk(X, Y);
 
     tempX[0] = chaos.X1(i, X);
     tempX[1] = chaos.X2(i, X);
     tempX[2] = chaos.X3(i, X);
 
 
-    tempY[0] = (i < SYNC) ? chaos.X1(i, Y) : chaos.X1(i, Y)+u;
+    tempY[0] = (i < SYNC) ? chaos.X1(i, Y) : chaos.ukX1(i, Y, u);
     tempY[1] = chaos.X2(i, Y);
     tempY[2] = chaos.X3(i, Y);
 
