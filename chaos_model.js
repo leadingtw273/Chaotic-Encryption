@@ -2,14 +2,14 @@ let NP = require('number-precision');
 
 let e = [];
 
-let c1 = -1.7;
-let c2 = 0.72;
+const c1 = -1.7;
+const c2 = 0.72;
 
-let A = -0.5;
+const A = -0.5;
 
 module.exports = {
     X1: (k, x) => {
-        return (k <= 1) ? x[0] : NP.strip(1.76 - x[1] * x[1] - 0.1 * x[2]);
+        return (k <= 1) ? x[0] : NP.strip(1.76 -  x[1] * x[1] - 0.1 * x[2]);
     },
     X2: (k, x) => {
         return (k <= 1) ? x[1] : NP.strip(x[0]);
@@ -28,7 +28,4 @@ module.exports = {
 
         return u;
     }
-}
-let round = function (val, precision) {
-    return Math.round(Math.round(val * Math.pow(10, (precision || 0) + 1)) / 10) / Math.pow(10, (precision || 0));
 }

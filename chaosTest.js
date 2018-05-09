@@ -4,7 +4,8 @@ let chaos = require("./chaos_model.js");
 let X = [0.5, -0.3, 0.4];
 let Y = [-0.3, -0.1, 0.8];
 
-let N = 50;
+const N = 50;
+const SYNC = 10;
 
 let tempX = [];
 let tempY = [];
@@ -20,7 +21,7 @@ for (let i = 1; i <= N; i++) {
     tempX[2] = chaos.X3(i, X);
 
 
-    tempY[0] = (i < 10) ? chaos.X1(i, Y) : chaos.X1(i, Y)+u;
+    tempY[0] = (i < SYNC) ? chaos.X1(i, Y) : chaos.X1(i, Y)+u;
     tempY[1] = chaos.X2(i, Y);
     tempY[2] = chaos.X3(i, Y);
 
