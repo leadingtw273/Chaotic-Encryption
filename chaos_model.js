@@ -24,12 +24,12 @@ module.exports = {
     },
     createUk: (X, Y) => {
 
-        e[0] = NP.strip(Y[0] - X[0]);
-        e[1] = NP.strip(Y[1] - X[1]);
-        e[2] = NP.strip(Y[2] - X[2]);
+        e[0] = f.round(Y[0] - X[0]);
+        e[1] = f.round(Y[1] - X[1]);
+        e[2] = f.round(Y[2] - X[2]);
 
-        let s = NP.strip(e[0] + (c1 * e[1]) + (c2 * e[2]));
-        let u = NP.strip(((X[1] ^ 2) - (Y[1] ^ 2) - (0.1 * e[2]) + (c1 * e[0]) + (c2 * e[1]) - e[0] - (c1 * e[1]) - (c2 * e[2])) + (A * s));
+        let s = f.round(e[0] + (c1 * e[1]) + (c2 * e[2]));
+        let u = f.round(((X[1]**2) - (Y[1]**2) - (0.1 * e[2]) + (c1 * e[0]) + (c2 * e[1]) - e[0] - (c1 * e[1]) - (c2 * e[2])) + (A * s));
 
         return f.round(u,6);
     }
