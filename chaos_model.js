@@ -1,34 +1,32 @@
-//X1(K+1) = 1.76 - X2(K)*X2(K)-0.1X3(K)
-//X2(K+1) = X1(K)
-//X3(K+1) = X2(K)
+let NP = require('number-precision');
+
+let e = [];
+
+let c1 = -1.7;
+let c2 = 0.72;
+
+let A = -0.5;
+
 module.exports = {
-    X1 : function(k,y1,y2,y3){
-        return (k <= 1) ? y1 : round(1.76 - y2*y2-0.1*y3,6);
+    X1: (k, x) => {
+        return (k <= 1) ? x[0] : NP.strip(1.76 - x[1] * x[1] - 0.1 * x[2]);
     },
-    X2 : function(k,y1,y2,y3){
-        return (k <= 1) ? y2 : round(y1,6);
+    X2: (k, x) => {
+        return (k <= 1) ? x[1] : NP.strip(x[0]);
     },
-    X3 : function(k,y1,y2,y3){
-        return (k <= 1) ? y3 : round(y2,6);
+    X3: (k, x) => {
+        return (k <= 1) ? x[2] : NP.strip(x[1]);
     },
-    henonMap : (k, x1, x2, x3) => {
-        let y1, y2, y3;
+    createUk: (X, Y) => {
 
-        console.log(`X1(1) = ${x1}\t\t,X2(1) = ${x2}\t\t,X3(1) = ${x3}\t\t`);
-            
-        for(let i=2; i<k; i++){
+        e[0] = NP.strip(Y[0] - X[0]);
+        e[1] = NP.strip(Y[1] - X[1]);
+        e[2] = NP.strip(Y[2] - X[2]);
 
-            y1 = round(1.76-(x2*x2)-(0.1*x3),6);
-            y2 = round(x1,6);
-            y3 = round(x2,6);
+        let s = NP.strip(e[0] + (c1 * e[1]) + (c2 * e[2]));
+        let u = NP.strip(-((X[1] ^ 2) - (Y[1] ^ 2) - (0.1 * e[2]) + (c1 * e[0]) + (c2 * e[1]) - e[0] - (c1 * e[1]) - (c2 * e[2])) + (A * s));
 
-            x1 = y1;
-            x2 = y2;
-            x3 = y3;
-
-            console.log(`X1(${i}) = ${x1}\t\t,X2(${i}) = ${x2}\t\t,X3(${i}) = ${x3}\t\t`);
-
-        }
+        return u;
     }
 }
 let round = function (val, precision) {
