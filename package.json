@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint /*.js"
   },
   "keywords": [],
   "author": "leadingtw<leadingtw@gmail.com>",
@@ -14,5 +15,10 @@
     "express": "^4.16.3",
     "float": "^1.0.2",
     "npm": "^6.0.0"
-  }
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0"
+  },
+  "pre-commit": ["lint"]
 }
