@@ -5,8 +5,8 @@ const c2 = 0.72;
 
 const A = -0.5;
 
-module.exports = {
-  runHenonmap: (k, x) => {
+const chaos = {
+  runChaos: (k, x) => {
     let t = x.slice();
 
     if (k > 1) {
@@ -17,10 +17,20 @@ module.exports = {
 
     return t;
   },
+  runMaster: (k, x) => {
+    return chaos.runChaos(k, x);
+  },
+  runSlave: (k, x, Um) => {
+    let t = chaos.runChaos(k, x);
+    if(x>1){
+      t[0] = f.round(t[0] + chaos.createUs(x) + Um, 10);
+    }
+    return t;
+  },
   createUk: (X, Y) => {
 
-    let Um = this.createUm(X);
-    let Us = this.createUs(Y);
+    let Um = chaos.createUm(X);
+    let Us = chaos.createUs(Y);
 
     return f.round(Um + Us, 10);
   },
@@ -42,3 +52,5 @@ module.exports = {
     return JSON.stringify(a1) == JSON.stringify(a2);
   }
 };
+
+module.exports = chaos;

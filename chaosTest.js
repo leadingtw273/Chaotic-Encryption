@@ -2,11 +2,11 @@ const chaos = require('./chaos_model.js');
 const f = require('float');
 
 
-let X = [0.5, -0.3, 0.4];
-let Y = [-0.3, -0.1, 0.8];
-
 const N = 10000;
 const SYNC = 0;
+
+let X = [0.5, -0.3, 0.4];
+let Y = [-0.3, -0.1, 0.8];
 
 let tempX = [];
 let tempY = [];
@@ -18,9 +18,9 @@ let count = 0;
 
 for (let i = 1; i <= N; i++) {
 
-  tempX = chaos.runHenonmap(i, X);
+  tempX = chaos.runMaster(i, X);
 
-  tempY = chaos.runHenonmap(i, Y);
+  tempY = chaos.runSlave(i, Y, Um);
 
   if (i >= SYNC) {
     tempY[0] = f.round(tempY[0] + Um + Us, 10);
@@ -44,5 +44,5 @@ for (let i = 1; i <= N; i++) {
     count = 0;
   }
 
-  console.log(`X1(${i}) = ${X[0]}\t\t, Y1(${i}) = ${Y[0]}\t\t, ${count}`);
+  console.log(`X1(${i}) = ${X[0].toFixed(6)}\t\t, Y1(${i}) = ${Y[0].toFixed(6)}\t\t, Uk = ${(Um + Us).toFixed(10)}\t\t, count = ${count}`);
 }
