@@ -11,11 +11,8 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
-    "@types/big.js": "^4.0.4",
-    "big.js": "^5.0.3",
     "express": "^4.16.3",
     "float": "^1.0.2",
-    "npm": "^6.0.0",
-    "number-precision": "^1.2.0"
+    "npm": "^6.0.0"
   }
 }
