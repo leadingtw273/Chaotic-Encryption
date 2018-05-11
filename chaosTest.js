@@ -5,7 +5,7 @@ let f = require('float');
 let X = [0.7, -0.3, 1];
 let Y = [-0.3, -0.1, 0.8];
 
-const N = 2000;
+const N = 50;
 const SYNC = 10;
 
 let tempX = [];
