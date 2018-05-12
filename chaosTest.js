@@ -1,6 +1,6 @@
-const chaos = require('./chaos_model.js');
+const Chaos = require('./chaos_model.js');
 
-const N = 10000;
+const N = 1000;
 
 let X = [0.5, -0.3, 0.4];
 let Y = [-0.3, -0.1, 0.8];
@@ -9,6 +9,10 @@ let Um = 0;
 let Us = 0;
 
 let count = 0;
+
+const chaos = new Chaos(0.9,[-1.7, 0.72]);
+
+chaos.setModulation([1,1,1],[0,0,0]);
 
 for (let i = 1; i <= N; i++) {
 
