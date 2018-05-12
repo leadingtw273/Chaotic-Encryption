@@ -11,12 +11,22 @@ let chaosPrt = {
 };
 
 class chaos {
-  
+
+  /**
+   * Chaos 的 constructor
+   * @param {number} A Afa 參數
+   * @param {number[]} c c 參數
+   */
   constructor(A, c) {
     chaosPrt.A = A;
     chaosPrt.c = c;
   }
 
+  /**
+   * 設定調變參數
+   * @param  {number[]} ax 振幅調變
+   * @param  {number[]} dx 準位調變
+   */
   setModulation(ax, dx) {
     chaosPrt.ax = ax;
     chaosPrt.dx = dx;
@@ -24,6 +34,10 @@ class chaos {
     this.runModulation();
   }
 
+  /**
+   * 執行調變參數運算，
+   * 求出 (g) (h) (j) 的值
+   */
   runModulation() {
     let ax = chaosPrt.ax;
     let dx = chaosPrt.dx;
@@ -40,6 +54,12 @@ class chaos {
     chaosPrt.j[1] = -(ax[2] * dx[1]) / ax[1] + dx[2];
   }
 
+  /**
+   * 混沌運算
+   * @param {number} k 狀態值
+   * @param {number[]} x 前值
+   * @return {number[]} 回傳現值
+   */
   runChaos(k, x) {
     let t = x.slice();
 
@@ -58,10 +78,23 @@ class chaos {
     return t;
   }
 
+  /**
+   * 主混沌運算
+   * @param {number} k 狀態值
+   * @param {number[]} x 前值
+   * @return {number[]} 回傳現值
+   */
   runMaster(k, x) {
     return this.runChaos(k, x);
   }
 
+  /**
+   * 僕混沌運算
+   * @param {*} k 狀態值
+   * @param {*} x 前值
+   * @param {*} Um 主端控制器
+   * @return {number[]} 回傳經過同步運算的值
+   */
   runSlave(k, x, Um) {
     let t = this.runChaos(k, x);
     if (k > 1) {
@@ -70,6 +103,12 @@ class chaos {
     return t;
   }
 
+  /**
+   * 計算同步控制器(Uk)
+   * @param {number[]} X 主端值
+   * @param {number[]} Y 僕端值
+   * @return {number} 回傳同步控制器
+   */
   createUk(X, Y) {
 
     let Um = this.createUm(X);
@@ -78,6 +117,11 @@ class chaos {
     return f.round(Um + Us, 10);
   }
 
+  /**
+   * 計算主端控制器(Um)
+   * @param {number[]} x 主端值
+   * @return {number} 回傳主端控制器
+   */
   createUm(x) {
     let A = chaosPrt.A;
     let c = chaosPrt.c;
@@ -91,6 +135,11 @@ class chaos {
 
   }
 
+  /**
+   * 計算僕端控制器(Um)
+   * @param {number[]} y 僕端值
+   * @return {number} 回傳僕端控制器
+   */
   createUs(y) {
     let A = chaosPrt.A;
     let c = chaosPrt.c;
@@ -104,6 +153,12 @@ class chaos {
 
   }
 
+  /**
+   * 確認兩混沌系統是否同步
+   * @param {number[]} a1 比對值(a1)
+   * @param {number[]} a2 比對值(a2)
+   * @return {boolean} 回傳是否同步
+   */
   arraysEqual(a1, a2) {
 
     let p1 = a1[0].toFixed(6) == a2[0].toFixed(6);
@@ -113,6 +168,9 @@ class chaos {
     return p1 && p2 && p3;
   }
 
+  /**
+   * 顯示測試
+   */
   show() {
     console.log(`A = ${chaosPrt.A}, c = ${chaosPrt.c}, g = ${chaosPrt.g}, h = ${chaosPrt.h}, j = ${chaosPrt.j}`);
   }
