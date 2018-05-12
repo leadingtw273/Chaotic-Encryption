@@ -1,15 +1,9 @@
 const chaos = require('./chaos_model.js');
-const f = require('float');
 
-
-const N = 10000;
-const SYNC = 0;
+const N = 1000;
 
 let X = [0.5, -0.3, 0.4];
 let Y = [-0.3, -0.1, 0.8];
-
-let tempX = [];
-let tempY = [];
 
 let Um = 0;
 let Us = 0;
@@ -18,19 +12,11 @@ let count = 0;
 
 for (let i = 1; i <= N; i++) {
 
-  tempX = chaos.runMaster(i, X);
+  X = chaos.runMaster(i, X);
 
-  tempY = chaos.runSlave(i, Y, Um);
-
-  if (i >= SYNC) {
-    tempY[0] = f.round(tempY[0] + Um + Us, 10);
-  }
-
-  X = tempX;
-  Y = tempY;
+  Y = chaos.runSlave(i, Y, Um);
 
   Um = chaos.createUm(X);
-  Us = chaos.createUs(Y);
 
   if (chaos.arraysEqual(X, Y)) {
 

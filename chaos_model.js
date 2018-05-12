@@ -22,7 +22,7 @@ const chaos = {
   },
   runSlave: (k, x, Um) => {
     let t = chaos.runChaos(k, x);
-    if(x>1){
+    if(k>1){
       t[0] = f.round(t[0] + chaos.createUs(x) + Um, 10);
     }
     return t;
