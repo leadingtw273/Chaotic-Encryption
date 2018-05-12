@@ -1,6 +1,6 @@
 const f = require('float');
 
-let chaosPrt = {
+let chaosParam = {
   A: 0,
   c: [],
   ax: [1, 1, 1],
@@ -14,12 +14,12 @@ class chaos {
 
   /**
    * Chaos 的 constructor
-   * @param {number} A Afa 參數
+   * @param {number} A α 參數
    * @param {number[]} c c 參數
    */
   constructor(A, c) {
-    chaosPrt.A = A;
-    chaosPrt.c = c;
+    chaosParam.A = A;
+    chaosParam.c = c;
   }
 
   /**
@@ -28,8 +28,8 @@ class chaos {
    * @param  {number[]} dx 準位調變
    */
   setModulation(ax, dx) {
-    chaosPrt.ax = ax;
-    chaosPrt.dx = dx;
+    chaosParam.ax = ax;
+    chaosParam.dx = dx;
 
     this.runModulation();
   }
@@ -39,19 +39,19 @@ class chaos {
    * 求出 (g) (h) (j) 的值
    */
   runModulation() {
-    let ax = chaosPrt.ax;
-    let dx = chaosPrt.dx;
+    let ax = chaosParam.ax;
+    let dx = chaosParam.dx;
 
-    chaosPrt.g[0] = -(ax[0] / (ax[1] * ax[1]));
-    chaosPrt.g[1] = 2 * ax[0] * dx[1] / (ax[1] * ax[1]);
-    chaosPrt.g[2] = -0.1 * ax[0] / ax[2];
-    chaosPrt.g[3] = ax[0] * (1.76 - (dx[1] * dx[1]) / (ax[1] * ax[1]) + 0.1 * ax[0] * dx[2] / ax[2]) + dx[0];
+    chaosParam.g[0] = -(ax[0] / (ax[1] * ax[1]));
+    chaosParam.g[1] = 2 * ax[0] * dx[1] / (ax[1] * ax[1]);
+    chaosParam.g[2] = -0.1 * ax[0] / ax[2];
+    chaosParam.g[3] = ax[0] * (1.76 - (dx[1] * dx[1]) / (ax[1] * ax[1]) + 0.1 * ax[0] * dx[2] / ax[2]) + dx[0];
 
-    chaosPrt.h[0] = ax[1] / ax[0];
-    chaosPrt.h[1] = -(ax[1] * dx[0]) / ax[0] + dx[1];
+    chaosParam.h[0] = ax[1] / ax[0];
+    chaosParam.h[1] = -(ax[1] * dx[0]) / ax[0] + dx[1];
 
-    chaosPrt.j[0] = ax[2] / ax[1];
-    chaosPrt.j[1] = -(ax[2] * dx[1]) / ax[1] + dx[2];
+    chaosParam.j[0] = ax[2] / ax[1];
+    chaosParam.j[1] = -(ax[2] * dx[1]) / ax[1] + dx[2];
   }
 
   /**
@@ -63,9 +63,9 @@ class chaos {
   runChaos(k, x) {
     let t = x.slice();
 
-    let g = chaosPrt.g;
-    let h = chaosPrt.h;
-    let j = chaosPrt.j;
+    let g = chaosParam.g;
+    let h = chaosParam.h;
+    let j = chaosParam.j;
 
     if (k > 1) {
 
@@ -90,9 +90,9 @@ class chaos {
 
   /**
    * 僕混沌運算
-   * @param {*} k 狀態值
-   * @param {*} x 前值
-   * @param {*} Um 主端控制器
+   * @param {number} k 狀態值
+   * @param {number[]} x 前值
+   * @param {number} Um 主端控制器
    * @return {number[]} 回傳經過同步運算的值
    */
   runSlave(k, x, Um) {
@@ -123,11 +123,11 @@ class chaos {
    * @return {number} 回傳主端控制器
    */
   createUm(x) {
-    let A = chaosPrt.A;
-    let c = chaosPrt.c;
-    let g = chaosPrt.g;
-    let h = chaosPrt.h;
-    let j = chaosPrt.j;
+    let A = chaosParam.A;
+    let c = chaosParam.c;
+    let g = chaosParam.g;
+    let h = chaosParam.h;
+    let j = chaosParam.j;
 
     let Um = ((x[1] * x[1]) * g[0]) + (x[1] * g[1]) + (x[2] * g[2]) + (x[0] * c[0] * h[0]) + (x[1] * c[1] * j[0]) - (x[0] * 0.9) - (x[1] * c[0] * A) - (x[2] * c[1] * A);
 
@@ -141,11 +141,11 @@ class chaos {
    * @return {number} 回傳僕端控制器
    */
   createUs(y) {
-    let A = chaosPrt.A;
-    let c = chaosPrt.c;
-    let g = chaosPrt.g;
-    let h = chaosPrt.h;
-    let j = chaosPrt.j;
+    let A = chaosParam.A;
+    let c = chaosParam.c;
+    let g = chaosParam.g;
+    let h = chaosParam.h;
+    let j = chaosParam.j;
 
     let Us = (-(-y[1] * -y[1]) * g[0]) - (y[1] * g[1]) - (y[2] * g[2]) - (y[0] * c[0] * h[0]) - (y[1] * c[1] * j[0]) + (y[0] * 0.9) + (y[1] * c[0] * A) + (y[2] * c[1] * A);
 
@@ -172,7 +172,7 @@ class chaos {
    * 顯示測試
    */
   show() {
-    console.log(`A = ${chaosPrt.A}, c = ${chaosPrt.c}, g = ${chaosPrt.g}, h = ${chaosPrt.h}, j = ${chaosPrt.j}`);
+    console.log(`A = ${chaosParam.A}, c = ${chaosParam.c}, g = ${chaosParam.g}, h = ${chaosParam.h}, j = ${chaosParam.j}`);
   }
 
 }

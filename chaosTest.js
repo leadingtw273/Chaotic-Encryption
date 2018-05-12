@@ -35,5 +35,5 @@ for (let i = 1; i <= N; i++) {
     count = 0;
   }
 
-  console.log(`X1(${i}) = ${X[0].toFixed(10)}\t\t, Y1(${i}) = ${Y[0].toFixed(10)}\t\t, count = ${count}\t\t, Um = ${Um}\t\t, Us = ${Us}`);
+  console.log(`X1(${i}) = ${X[0].toFixed(6)}\t\t, Y1(${i}) = ${Y[0].toFixed(6)}\t\t, count = ${count}\t\t, Um = ${Um}\t\t, Us = ${Us}`);
 }
