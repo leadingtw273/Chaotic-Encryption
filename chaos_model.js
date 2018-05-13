@@ -11,7 +11,7 @@ let chaosParam = {
   count: 0
 };
 
-class chaos {
+class Chaos {
 
   /**
    * Chaos 的 constructor
@@ -188,4 +188,4 @@ class chaos {
 
 }
 
-module.exports = chaos;
+module.exports = Chaos;

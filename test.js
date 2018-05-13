@@ -1,18 +1,11 @@
-const crypto = require('crypto');
+const AES256 = require('./aes256_model');
 
-const sha256 = crypto.createHash('sha256');
+let aes256 = new AES256('sha256','aes-256-ecb');
 
-let chaosData = '0.123457';
-let key = sha256.update(chaosData).digest('hex');
-console.log(`key  = ${key}`);
+aes256.runHash('0.123456');
 
+let sendData = aes256.encryp('leadingtw');
+console.log(`sendData = ${sendData}`);
 
-let aes256Enc = crypto.createCipher('aes-256-ecb', key);
-let sendData = aes256Enc.update('leadingtw','utf8','hex');
-sendData += aes256Enc.final('hex');
-console.log(`send = ${sendData}`);
-
-let aes256Dec = crypto.createDecipher('aes-256-ecb', key);
-let getData = aes256Dec.update(sendData,'hex','utf8');
-getData += aes256Dec.final('utf8');
-console.log(`get  = ${getData}`);
+let getData = aes256.decryp(sendData);
+console.log(`getData = ${getData}`);
