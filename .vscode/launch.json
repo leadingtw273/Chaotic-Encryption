@@ -12,7 +12,7 @@
     },
     {
       "type": "node",
-      "request": "test",
+      "request": "launch",
       "name": "測試功能",
       "program": "${workspaceFolder}\\test.js"
     }

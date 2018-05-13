@@ -1,6 +1,18 @@
-const test = require('./chaos_model_class.js');
+const crypto = require('crypto');
 
-const tt = new test(0.9,[-1.7, 0.72]);
-tt.setModulation([1,0.8,0.9],[-0.3,1.2,1.3]);
-tt.show();
-console.log( tt.chaosParameter);
+const sha256 = crypto.createHash('sha256');
+
+let chaosData = '0.123457';
+let key = sha256.update(chaosData).digest('hex');
+console.log(`key  = ${key}`);
+
+
+let aes256Enc = crypto.createCipher('aes-256-ecb', key);
+let sendData = aes256Enc.update('leadingtw','utf8','hex');
+sendData += aes256Enc.final('hex');
+console.log(`send = ${sendData}`);
+
+let aes256Dec = crypto.createDecipher('aes-256-ecb', key);
+let getData = aes256Dec.update(sendData,'hex','utf8');
+getData += aes256Dec.final('utf8');
+console.log(`get  = ${getData}`);
