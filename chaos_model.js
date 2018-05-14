@@ -160,14 +160,11 @@ class Chaos {
    * @param {number[]} a2 比對值(a2)
    * @return {boolean} 回傳是否同步
    */
-  checkSync(a1, a2) {
+  checkSync(Us,Um) {
 
     let sync = false;
-    let p1 = a1[0].toFixed(6) == a2[0].toFixed(6);
-    let p2 = a1[1].toFixed(6) == a2[1].toFixed(6);
-    let p3 = a1[2].toFixed(6) == a2[2].toFixed(6);
 
-    if(p1 && p2 && p3){
+    if((Us.toFixed(6) == Um.toFixed(6))){
       chaosParam.count =  chaosParam.count + 1;
     }
 
