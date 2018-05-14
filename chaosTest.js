@@ -1,4 +1,5 @@
 const Chaos = require('./chaos_model.js');
+const AES256 = require('./aes256_model');
 
 const N = 1000;
 
@@ -6,6 +7,9 @@ let X = [0.5, -0.3, 0.4];
 let Y = [-0.3, -0.1, 0.8];
 
 let Um = 0;
+
+let aes256 = new AES256('sha256','aes-256-ecb');
+aes256.runHash('0.123456');
 
 const chaos = new Chaos(0.9, [-1.7, 0.72]);
 
