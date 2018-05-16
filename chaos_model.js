@@ -68,8 +68,8 @@ class Chaos {
      * @return {number[]} 回傳現值
      */
     runChaos(k, x) {
-        let privateData = _chaosParam.get(this)
-        let t = x.slice();
+        let privateData = _chaosParam.get(this);
+        let t = [];
 
         let g = privateData.g;
         let h = privateData.h;
@@ -77,6 +77,18 @@ class Chaos {
 
         if (k > 1) {
 
+            t = x.slice();
+            t[0] = f.round(g[0] * (x[1] * x[1]) + g[1] * x[1] + g[2] * x[2] + g[3], 10);
+            t[1] = f.round(h[0] * x[0] + h[1], 10);
+            t[2] = f.round(j[0] * x[1] + j[1], 10);
+
+        } else {
+
+            x[0] = (privateData.ax[0] * x[0]) + privateData.dx[0];
+            x[1] = (privateData.ax[1] * x[1]) + privateData.dx[1];
+            x[2] = (privateData.ax[2] * x[2]) + privateData.dx[2];
+
+            t = x.slice();
             t[0] = f.round(g[0] * (x[1] * x[1]) + g[1] * x[1] + g[2] * x[2] + g[3], 10);
             t[1] = f.round(h[0] * x[0] + h[1], 10);
             t[2] = f.round(j[0] * x[1] + j[1], 10);
@@ -122,7 +134,7 @@ class Chaos {
         let Um = this.createUm(X);
         let Us = this.createUs(Y);
 
-        return f.round(Um + Us, 10);
+        return f.round(Um + Us, 6);
     }
 
     /**
@@ -138,14 +150,14 @@ class Chaos {
         let h = privateData.h;
         let j = privateData.j;
 
-        let Um = ((x[1] * x[1]) * g[0]) + (x[1] * g[1]) + (x[2] * g[2]) + (x[0] * c[0] * h[0]) + (x[1] * c[1] * j[0]) - (x[0] * 0.9) - (x[1] * c[0] * A) - (x[2] * c[1] * A);
+        let Um = Math.pow(x[1], 2) * g[0] + x[1] * g[1] + x[2] * g[2] + x[0] * c[0] * h[0] + x[1] * c[1] * j[0] - x[0] * A - x[1] * c[0] * A - x[2] * c[1] * A;
 
         return f.round(Um, 10);
 
     }
 
     /**
-     * 計算僕端控制器(Um)
+     * 計算僕端控制器(Us)
      * @param {number[]} y 僕端值
      * @return {number} 回傳僕端控制器
      */
@@ -157,7 +169,7 @@ class Chaos {
         let h = privateData.h;
         let j = privateData.j;
 
-        let Us = (-(-y[1] * -y[1]) * g[0]) - (y[1] * g[1]) - (y[2] * g[2]) - (y[0] * c[0] * h[0]) - (y[1] * c[1] * j[0]) + (y[0] * 0.9) + (y[1] * c[0] * A) + (y[2] * c[1] * A);
+        let Us = (-Math.pow(y[1], 2) * g[0] - y[1] * g[1] - y[2] * g[2] - y[0] * c[0] * h[0] - y[1] * c[1] * j[0] + y[0] * A + y[1] * c[0] * A + y[2] * c[1] * A);
 
         return f.round(Us, 10);
 
@@ -171,10 +183,12 @@ class Chaos {
      */
     checkSync(Us, Um) {
         let privateData = _chaosParam.get(this)
-
         let sync = false;
 
-        if ((Us.toFixed(6) == Um.toFixed(6))) {
+        Um = f.round(Um, 4);
+        Us = f.round(Us, 4);
+
+        if ((Us + Um) == 0) {
             privateData.count = privateData.count + 1;
 
             if (privateData.count >= 10) {
