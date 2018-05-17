@@ -42,41 +42,41 @@ client.setModulation([1, 1, 1], [0, 0, 0]);
 startTime = new Date().getTime();
 for (let i = 1; i <= N; i++) {
 
-    let Uk = server.createUk(X,Y);
-    // 主端 CLIENT
-    Um = client.createUm(X);
-    X = client.runMaster(i, X);
+  let Uk = server.createUk(X, Y);
+  // 主端 CLIENT
+  Um = client.createUm(X);
+  X = client.runMaster(i, X);
 
-    //僕端 SERVER
-    Us = server.createUs(Y);
-    Y = server.runSlave(i, Y, Um);
+  //僕端 SERVER
+  Us = server.createUs(Y);
+  Y = server.runSlave(i, Y, Um);
 
 
-    if(i == 454){
-        console.log('stop');
-    }
+  if (i == 454) {
+    console.log('stop');
+  }
 
-    if (server.checkSync(Us, Um)) {
-        servarAES.runHash(Y[0].toFixed(4));
-        sendData = servarAES.encryp(impData);
-        if (syncCount == 0) syncTime = new Date().getTime();
-        syncCount++;
-        console.log('----------------------------------------------------------------------------------------');
-    } else {
-        sendData = '';
-    };
-
-    if (sendData.length != 0) {
-        clientAES.runHash(X[0].toFixed(4));
-        getData = clientAES.decryp(sendData);
-        (getData == 'error') ? errorCount++ : succsCount++;
-        console.log('----------------------------------------------------------------------------------------');
-    }
-
-    console.log(`(- ${(X[0] - Y[0]).toFixed(6)}), Um = ${Um.toFixed(6)}, Us = ${Us.toFixed(6)}, Uk = ${Uk.toFixed(6)}`);
-    console.log(`X1(${i}) = ${X[0].toFixed(6)}`);
-    console.log(`Y1(${i}) = ${Y[0].toFixed(6)}`);
+  if (server.checkSync(Us, Um)) {
+    servarAES.runHash(Y[0].toFixed(4));
+    sendData = servarAES.encryp(impData);
+    if (syncCount == 0) syncTime = new Date().getTime();
+    syncCount++;
     console.log('----------------------------------------------------------------------------------------');
+  } else {
+    sendData = '';
+  }
+
+  if (sendData.length != 0) {
+    clientAES.runHash(X[0].toFixed(4));
+    getData = clientAES.decryp(sendData);
+    (getData == 'error') ? errorCount++ : succsCount++;
+    console.log('----------------------------------------------------------------------------------------');
+  }
+
+  console.log(`(- ${(X[0] - Y[0]).toFixed(6)}), Um = ${Um.toFixed(6)}, Us = ${Us.toFixed(6)}, Uk = ${Uk.toFixed(6)}`);
+  console.log(`X1(${i}) = ${X[0].toFixed(6)}`);
+  console.log(`Y1(${i}) = ${Y[0].toFixed(6)}`);
+  console.log('----------------------------------------------------------------------------------------');
 }
 endTime = new Date().getTime();
 
