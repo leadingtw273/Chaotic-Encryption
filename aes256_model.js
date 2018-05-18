@@ -24,7 +24,7 @@ class AES256 {
    * 將傳入值進行hash運算
    * @param {string} chaosData 傳入值
    */
-  runHash(chaosData) {
+  setKey(chaosData) {
     let privateData = _aesParam.get(this);
     // hash 混沌產生值 轉成對稱金鑰
     let hash = crypto.createHash(privateData.hashMode);
@@ -44,7 +44,7 @@ class AES256 {
 
     sendData += aes256Enc.final('hex');
 
-    console.log(`原始 data  \t= ${data}`);
+    console.log(`輸入 data  \t= ${data}`);
     console.log(`加密 data  \t= ${sendData}`);
     return sendData;
   }
@@ -66,7 +66,7 @@ class AES256 {
     }
 
     console.log(`解密 data  \t= ${data}`);
-    console.log(`原始 data  \t= ${getData}`);
+    console.log(`輸出 data  \t= ${getData}`);
     return getData;
   }
 }

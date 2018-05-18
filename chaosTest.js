@@ -2,7 +2,7 @@ const Chaos = require('./chaos_model.js');
 const AES256 = require('./aes256_model');
 
 // 執行次數
-const N = 1000;
+const N = 500;
 
 // 初始值
 let X = [0.5, -0.3, 0.4];
@@ -17,7 +17,7 @@ let sendData = '';
 let getData = '';
 
 // 加解密資料
-let impData = 'leadingtw';
+let impData = 'leadingtw_273_r124672736_周昱宏';
 
 // 計算次數
 let errorCount = 0;
@@ -51,13 +51,8 @@ for (let i = 1; i <= N; i++) {
   Us = server.createUs(Y);
   Y = server.runSlave(i, Y, Um);
 
-
-  if (i == 454) {
-    console.log('stop');
-  }
-
   if (server.checkSync(Us, Um)) {
-    servarAES.runHash(Y[0].toFixed(4));
+    servarAES.setKey(Y[0].toFixed(4));
     sendData = servarAES.encryp(impData);
     if (syncCount == 0) syncTime = new Date().getTime();
     syncCount++;
@@ -67,7 +62,7 @@ for (let i = 1; i <= N; i++) {
   }
 
   if (sendData.length != 0) {
-    clientAES.runHash(X[0].toFixed(4));
+    clientAES.setKey(X[0].toFixed(4));
     getData = clientAES.decryp(sendData);
     (getData == 'error') ? errorCount++ : succsCount++;
     console.log('----------------------------------------------------------------------------------------');
@@ -81,5 +76,5 @@ for (let i = 1; i <= N; i++) {
 endTime = new Date().getTime();
 
 console.log(`執行次數: ${N}, 同步次數: ${syncCount}, 同步比: ${(syncCount / N) * 100} %`);
-console.log(`hash錯誤次數: ${errorCount}, hash成功次數: ${succsCount}, hash錯誤率: ${(errorCount / (errorCount + succsCount) * 100).toFixed(2)} %`);
+console.log(`錯誤次數: ${errorCount}, 成功次數: ${succsCount}, 錯誤率: ${(errorCount / (errorCount + succsCount) * 100).toFixed(2)} %`);
 console.log(`執行總時間: ${(endTime - startTime) / 1000} Sec, 同步所需時間: ${(syncTime - startTime) / 1000} Sec`);
