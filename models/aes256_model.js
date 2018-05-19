@@ -29,7 +29,7 @@ class AES256 {
     // hash 混沌產生值 轉成對稱金鑰
     let hash = crypto.createHash(privateData.hashMode);
     privateData.key = hash.update(chaosData).digest('hex');
-    console.log(`金鑰 key \t= ${privateData.key}`);
+    return privateData.key;
   }
 
   /**
@@ -44,8 +44,6 @@ class AES256 {
 
     sendData += aes256Enc.final('hex');
 
-    console.log(`輸入 data  \t= ${data}`);
-    console.log(`加密 data  \t= ${sendData}`);
     return sendData;
   }
 
@@ -65,8 +63,6 @@ class AES256 {
       return 'error';
     }
 
-    console.log(`解密 data  \t= ${data}`);
-    console.log(`輸出 data  \t= ${getData}`);
     return getData;
   }
 }

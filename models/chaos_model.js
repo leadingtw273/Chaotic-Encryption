@@ -25,6 +25,8 @@ class Chaos {
     let privateData = _chaosParam.get(this);
     privateData.A = A;
     privateData.c = c;
+    
+    this.runModulation();
   }
 
   /**

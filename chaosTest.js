@@ -1,5 +1,5 @@
-const Chaos = require('./chaos_model.js');
-const AES256 = require('./aes256_model');
+const Chaos = require('./models/chaos_model.js');
+const AES256 = require('./models/aes256_model');
 
 // 執行次數
 const N = 500;
