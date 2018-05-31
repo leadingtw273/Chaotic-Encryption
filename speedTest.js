@@ -7,9 +7,9 @@ const chaos = new Chaos(0.1, [-0.3, 0.02]);
 
 let X = [0.5, -0.3, 0.4];
 
-const N = 1000;
+const N = 100;
 const detN = 0.1;
-const data = 'leadingtw';
+const data = '超混沌測試';
 
 let sourceKey = '';
 let hashKey = '';

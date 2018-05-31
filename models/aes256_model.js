@@ -32,6 +32,11 @@ class AES256 {
     return privateData.key;
   }
 
+  setNoHashKey(chaosData) {
+    let privateData = _aesParam.get(this);
+    privateData.key = chaosData;
+  }
+
   /**
    * 將傳入值進行AES加密運算
    * @param {*} data 傳入值

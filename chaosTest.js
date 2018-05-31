@@ -2,7 +2,7 @@ const Chaos = require('./models/chaos_model.js');
 const AES256 = require('./models/aes256_model');
 
 // 執行次數
-const N = 500;
+const N = 100;
 
 // 初始值
 let X = [0.5, -0.3, 0.4];
