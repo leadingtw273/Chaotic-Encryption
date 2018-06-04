@@ -1,5 +1,5 @@
 const AES256 = require('./models/aes256_model');
-const Chaos = require('./models/chaos_model.js');
+const Chaos = require('./models/HENMAP_chaos_model.js');
 const avg = require('./models/avg_model.js');
 
 const AES = new AES256('sha256', 'aes-256-ecb');
