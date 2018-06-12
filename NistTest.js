@@ -5,6 +5,8 @@ const AES256 = require('./models/aes256_model.js');
 const infileName = './Input.txt';
 const chaosfileName = 'C:/NIST/data/chaosOutput.txt';
 const aesfileName = 'C:/NIST/data/aesOutput.txt';
+const chaosfileName_hash = 'C:/NIST/data/chaosOutput_hash.txt';
+const aesfileName_hsah = 'C:/NIST/data/aesOutput_hash.txt';
 
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('sha256', 'aes-256-ecb');
@@ -14,8 +16,11 @@ let X = [0.5, -0.3, 0.4];
 let readStream = fs.createReadStream(infileName);
 let wChaosStream = fs.createWriteStream(chaosfileName);
 let wAesStream = fs.createWriteStream(aesfileName);
+let wChaosStream_hash = fs.createWriteStream(chaosfileName_hash);
+let wAesStream_hash = fs.createWriteStream(aesfileName_hsah);
 
 let count = 0;
+let chunk = '';
 
 readStream.setEncoding('UTF8');
 
@@ -23,37 +28,57 @@ readStream.on('readable', () => {
   while (null !== (chunk = readStream.read(5))) {
     count++;
     console.log(readStream.bytesRead + ' = ' + count);
-    wAesStream.write(aes(chunk), "UTF8");
-    wChaosStream.write(crypt(chunk, count), "UTF8");
+    wAesStream.write(aes(chunk,false), 'UTF8');
+    wChaosStream.write(crypt(chunk, count,false), 'UTF8');
+    
+    wAesStream_hash.write(aes(chunk,true), 'UTF8');
+    wChaosStream_hash.write(crypt(chunk, count,true), 'UTF8');
   }
 });
 readStream.on('end', () => writeS());
-readStream.on("error", err => console.log(err.strck));
+readStream.on('error', err => console.log(err.strck));
 
-let writeS = dataS => {
+let writeS = () => {
   wAesStream.end();
-  wAesStream.on("finish", () => console.log("AES輸出完成"));
-  wAesStream.on("error", err => console.log(err.stack));
+  wAesStream.on('finish', () => console.log('AES輸出完成'));
+  wAesStream.on('error', err => console.log(err.stack));
 
   wChaosStream.end();
-  wChaosStream.on("finish", () => console.log("CHAOS輸出完成"));
-  wChaosStream.on("error", err => console.log(err.stack));
-}
+  wChaosStream.on('finish', () => console.log('CHAOS輸出完成'));
+  wChaosStream.on('error', err => console.log(err.stack));
+  
+  wAesStream_hash.end();
+  wAesStream_hash.on('finish', () => console.log('AES have hash輸出完成'));
+  wAesStream_hash.on('error', err => console.log(err.stack));
 
-let crypt = (data, i) => {
+  wChaosStream_hash.end();
+  wChaosStream_hash.on('finish', () => console.log('CHAOS have hash輸出完成'));
+  wChaosStream_hash.on('error', err => console.log(err.stack));
+};
+
+let crypt = (data, i,dohash) => {
 
   X = chaos.runChaos(i, X);
-  sourceKey = X[0];
-  AES.setNoHashKey(sourceKey.toFixed(6));
+  let sourceKey = X[0];
+  if(dohash){
+    AES.setKey(sourceKey.toFixed(6));
+  }else{
+    AES.setNoHashKey(sourceKey.toFixed(6));
+  }
+  //AES.setKey(sourceKey.toFixed(6));
   let encdata = AES.encryp(data);
   let procdata = proc(encdata);
   return procdata;
 };
 
-let aes = (data) => {
+let aes = (data,dohash) => {
 
-  sourceKey = 1.63;
-  AES.setNoHashKey(sourceKey.toFixed(6));
+  let sourceKey = 1.63;
+  if(dohash){
+    AES.setKey(sourceKey.toFixed(6));
+  }else{
+    AES.setNoHashKey(sourceKey.toFixed(6));
+  }
   let encdata = AES.encryp(data);
   let procdata = proc(encdata);
   return procdata;
@@ -61,7 +86,7 @@ let aes = (data) => {
 
 let proc = (_str) => {
 
-  let str = _str, result = "";
+  let str = _str, result = '';
 
   let n = 32;//指定第n位换行
 
@@ -87,7 +112,7 @@ let proc = (_str) => {
   for (let i = 0; i < str.length; i++) {
 
     result += sd[str[i]];
-    if ((i + 1) % n == 0) result += "   \n";
+    if ((i + 1) % n == 0) result += '   \n';
 
   }
   return result;

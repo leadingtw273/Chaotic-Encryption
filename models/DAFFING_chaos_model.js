@@ -14,10 +14,10 @@ class Chaos {
 
     _chaosParam.set(this, {
       A: 0,
-      R: 0,
+      R: 1,
       c: 0,
-      ax: [1, 1, 1],
-      dx: [0, 0, 0],
+      ax: [1, 1],
+      dx: [0, 0],
       g: [],
       h: [],
       count: 0
@@ -142,8 +142,9 @@ class Chaos {
     let g = privateData.g;
     let h = privateData.h;
 
-    let Um = Math.pow(x[1], 2) * g[0] + x[1] * g[1] + x[2] * g[2] + x[0] * c[0] * h[0] + x[1] * c[1] * j[0] - x[0] * A - x[1] * c[0] * A - x[2] * c[1] * A;
-
+    //let Um = Math.pow(x[1], 2) * g[0] + x[1] * g[1] + x[2] * g[2] + x[0] * c[0] * h[0] + x[1] * c[1] * j[0] - x[0] * A - x[1] * c[0] * A - x[2] * c[1] * A;
+    let Um = R*(+g[0]*x[0]+g[1]*Math.pow((x[1]), 3)+g[2]*Math.pow((x[1]),2)+g[3]*x[1]+c*h[0]*x[1]-c*A*x[0]-A*x[1]);
+    //let Us = (-g[0]*y[0]-g[1]*Math.pow((y[1]), 3)-g[2]*Math.pow((y[1]),2)-g[3]*y[1]-c*h[0]*y[1]+c*A*y[0]+A*y[1])-g[4]*(1-R)-A*h[1]*(1-R);
     return f.round(Um, 10);
 
   }
@@ -161,8 +162,10 @@ class Chaos {
     let g = privateData.g;
     let h = privateData.h;
 
-    let Us = (-Math.pow(y[1], 2) * g[0] - y[1] * g[1] - y[2] * g[2] - y[0] * c[0] * h[0] - y[1] * c[1] * j[0] + y[0] * A + y[1] * c[0] * A + y[2] * c[1] * A);
-
+    //let Us = (-Math.pow(y[1], 2) * g[0] - y[1] * g[1] - y[2] * g[2] - y[0] * c[0] * h[0] - y[1] * c[1] * j[0] + y[0] * A + y[1] * c[0] * A + y[2] * c[1] * A);
+    let xx = -g[4]*(1-R)-A*h[1]*(1-R);
+    console.log(xx);
+    let Us = (-g[0]*y[0]-g[1]*Math.pow((y[1]), 3)-g[2]*Math.pow((y[1]),2)-g[3]*y[1]-c*h[0]*y[1]+c*A*y[0]+A*y[1])-g[4]*(1-R)-A*h[1]*(1-R);
     return f.round(Us, 10);
 
   }
