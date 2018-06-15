@@ -3,21 +3,23 @@ const Chaos = require('./models/HENMAP_chaos_model.js');
 const AES256 = require('./models/aes256_model.js');
 
 const infileName = './Input.txt';
-const chaosfileName = 'C:/NIST/data/chaosOutput.txt';
 const aesfileName = 'C:/NIST/data/aesOutput.txt';
-const chaosfileName_hash = 'C:/NIST/data/chaosOutput_hash.txt';
 const aesfileName_hsah = 'C:/NIST/data/aesOutput_hash.txt';
+const chaosfileName = 'C:/NIST/data/chaosOutput.txt';
+const chaosfileName_hash = 'C:/NIST/data/chaosOutput_hash.txt';
 
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('sha256', 'aes-256-ecb');
 
-let X = [0.5, -0.3, 0.4];
+const readStream = fs.createReadStream(infileName);
 
-let readStream = fs.createReadStream(infileName);
-let wChaosStream = fs.createWriteStream(chaosfileName);
-let wAesStream = fs.createWriteStream(aesfileName);
-let wChaosStream_hash = fs.createWriteStream(chaosfileName_hash);
-let wAesStream_hash = fs.createWriteStream(aesfileName_hsah);
+const wChaosStream = fs.createWriteStream(chaosfileName);
+const wAesStream = fs.createWriteStream(aesfileName);
+
+const wChaosStream_hash = fs.createWriteStream(chaosfileName_hash);
+const wAesStream_hash = fs.createWriteStream(aesfileName_hsah);
+
+let X = [0.5, -0.3, 0.4];
 
 let count = 0;
 let chunk = '';
@@ -27,7 +29,9 @@ readStream.setEncoding('UTF8');
 readStream.on('readable', () => {
   while (null !== (chunk = readStream.read(5))) {
     count++;
-    console.log(readStream.bytesRead + ' = ' + count);
+    
+    console.log(chunk + ' = ' + count);
+
     wAesStream.write(aes(chunk,false), 'UTF8');
     wChaosStream.write(crypt(chunk, count,false), 'UTF8');
     
@@ -60,12 +64,13 @@ let crypt = (data, i,dohash) => {
 
   X = chaos.runChaos(i, X);
   let sourceKey = X[0];
+
   if(dohash){
     AES.setKey(sourceKey.toFixed(6));
   }else{
     AES.setNoHashKey(sourceKey.toFixed(6));
   }
-  //AES.setKey(sourceKey.toFixed(6));
+
   let encdata = AES.encryp(data);
   let procdata = proc(encdata);
   return procdata;
