@@ -2,7 +2,8 @@ const fs = require('fs');
 const Chaos = require('./models/HENMAP_chaos_model.js');
 const AES256 = require('./models/aes256_model.js');
 
-const infileName = './Input.txt';
+//const infileName = './Input.txt';
+const infileName = './500.jpg';
 const aesfileName = 'C:/NIST/data/aesOutput.txt';
 const aesfileName_hsah = 'C:/NIST/data/aesOutput_hash.txt';
 const chaosfileName = 'C:/NIST/data/chaosOutput.txt';
@@ -24,7 +25,7 @@ let X = [0.5, -0.3, 0.4];
 let count = 0;
 let chunk = '';
 
-readStream.setEncoding('UTF8');
+//readStream.setEncoding('UTF8');
 
 readStream.on('readable', () => {
   while (null !== (chunk = readStream.read(5))) {
@@ -43,6 +44,7 @@ readStream.on('end', () => writeS());
 readStream.on('error', err => console.log(err.strck));
 
 let writeS = () => {
+
   wAesStream.end();
   wAesStream.on('finish', () => console.log('AES輸出完成'));
   wAesStream.on('error', err => console.log(err.stack));

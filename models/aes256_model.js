@@ -35,6 +35,7 @@ class AES256 {
   setNoHashKey(chaosData) {
     let privateData = _aesParam.get(this);
     privateData.key = chaosData;
+    return privateData.key;
   }
 
   /**
@@ -43,7 +44,7 @@ class AES256 {
    */
   encryp(data) {
     let privateData = _aesParam.get(this);
-    // aes256-ec b加密 
+    // aes256-ecb加密 
     let aes256Enc = crypto.createCipher(privateData.aesMode, privateData.key);
     let sendData = aes256Enc.update(data, 'utf8', 'hex');
 

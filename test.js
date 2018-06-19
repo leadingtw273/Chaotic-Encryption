@@ -1,30 +1,21 @@
-const Chaos = require('./models/DAFFING_chaos_model');
+const AES = require('./models/aes256_model');
 
-const N = 10;
+let aes = new AES('sha256', 'aes-256-ecb');
 
-let x = [0.5,-0.3];
-let y = [0.3,0.6];
+let input = '8877665544332211';
+let key = '1122334455667788';
 
-const mChaos = new Chaos(0.2,2,0.3);
-const sChaos = new Chaos(0.2,2,0.3);
+let hashKey = aes.setNoHashKey(key);
+let encData = aes.encryp(input);
 
-mChaos.setModulation([1,1],[0,0]);
-sChaos.setModulation([1,1],[0,0]);
+let decData = aes.decryp(encData);
 
-let Um = 0;
-let Us = 0;
+console.log('=============================================================');
+console.log('input   : ' + input + ', length: ' + input.length);
+console.log('key     : ' + key + ', length: ' + key.length);
+console.log('hashKey : ' + hashKey + ', length: ' + hashKey.length);
+console.log('encData : ' + encData + ', length: ' + encData.length);
+console.log('-------------------------------------------------------------');
+console.log('decData : ' + decData + ', length: ' + decData.length);
+console.log('=============================================================');
 
-for(let i =0; i<N;i++){
-
-  // 主端 CLIENT
-  Um = mChaos.createUm(x);
-  x = mChaos.runMaster(i, x);
-
-  //僕端 SERVER
-  Us = sChaos.createUs(y);
-  y = sChaos.runSlave(i, y, Um);
-
-  console.log(`x: ${x}, Um: ${Um}`);
-  console.log(`y: ${y}, Us: ${Us}`);
-  console.log(sChaos.checkSync(Um,Us));
-}

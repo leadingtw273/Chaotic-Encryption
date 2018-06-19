@@ -12,9 +12,13 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
+    "canvas": "^2.0.0-alpha.12",
+    "concat-frames": "^1.0.3",
     "eslint": "^4.19.1",
     "express": "^4.16.3",
     "float": "^1.0.2",
+    "images": "^3.0.1",
+    "jpeg-js": "^0.3.4",
     "npm": "^6.0.0"
   },
   "devDependencies": {
