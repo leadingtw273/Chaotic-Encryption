@@ -20,7 +20,8 @@
     "images": "^3.0.1",
     "inkjet": "^2.1.2",
     "jpeg-js": "^0.3.4",
-    "npm": "^6.0.0"
+    "npm": "^6.1.0",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "eslint-config-airbnb-base": "^12.1.0",
