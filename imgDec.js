@@ -5,10 +5,10 @@ const AES256 = require('./models/aes256_model.js');
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('sha256', 'aes-256-ecb');
 
-const inputAesFileName = 'enc_aes_5000.txt';
-const inputChaosFileName = 'enc_chaos_5000.txt';
-const outputAesFileName = 'dec_aes_5000.jpg';
-const outputChaosFileName = 'dec_chaos_5000.jpg';
+const inputAesFileName = 'enc_aes_500.txt';
+const inputChaosFileName = 'enc_chaos_500.txt';
+const outputAesFileName = 'dec_aes_500.jpg';
+const outputChaosFileName = 'dec_chaos_500.jpg';
 
 const rAesStream = fs.createReadStream('./cryptFile/enc/' + inputAesFileName);
 const rChaosStream = fs.createReadStream('./cryptFile/enc/' + inputChaosFileName);
@@ -21,34 +21,23 @@ const wChaosImgStream = fs.createWriteStream('./cryptFile/dec/' + outputChaosFil
 let count = 0;
 let chunk = '';
 rChaosStream.on('readable', () => {
-  while (null !== (chunk = rChaosStream.read(64))) {
+  while (null !== (chunk = rChaosStream.read(16))) {
     count++;
 
-    let cry = crypt(chunk.toString(),count,true);
-
-    let bufCh = '';
-    let bufAr = [];
-    for(let i = 0; i<cry.length; i++){
-      bufCh += cry[i];
-      if(bufCh.length >= 2 ){
-        bufCh = '0x'.concat(bufCh);
-        bufAr.push(bufCh);
-        bufCh = '';
-      }
-    }
-    let buf = Buffer.from(bufAr);
+    let cry = crypt(chunk,count,true);
 
     console.log('============================');
-    console.log(chunk.toString());
-    console.log(chunk.toString().length);
+    console.log(chunk);
+    console.log(chunk.length);
     console.log('--------------------');
     console.log(cry);
     console.log(cry.length);
-    console.log('--------------------');
-    console.log(buf);
-    console.log(buf.length);
 
-    wChaosImgStream.write(buf);
+    if(chunk.length%16 != 0){
+      wChaosImgStream.write(chunk);
+    }else{
+      wChaosImgStream.write(cry);
+    }
     
   }
 });
@@ -56,23 +45,15 @@ rChaosStream.on('end', () => chaosWriteS());
 rChaosStream.on('error', err => console.log(err.strck));
 
 rAesStream.on('readable', () => {
-  while (null !== (chunk = rAesStream.read(64))) {
+  while (null !== (chunk = rAesStream.read(16))) {
     
-    let ae = aes(chunk.toString(),true);
-
-    let bufCh = '';
-    let bufAr = [];
-    for(let i = 0; i<ae.length; i++){
-      bufCh += ae[i];
-      if(bufCh.length >= 2 ){
-        bufCh = '0x'.concat(bufCh);
-        bufAr.push(bufCh);
-        bufCh = '';
-      }
+    let ae = aes(chunk,true);
+    
+    if(chunk.length%16 != 0){
+      wAesImgStream.write(chunk);
+    }else{
+      wAesImgStream.write(ae);
     }
-    let buf = Buffer.from(bufAr);
-    
-    wAesImgStream.write(buf);
     
   }
 });

@@ -1,39 +1,47 @@
-var Canvas = require('canvas');
-var fs = require('fs');
-var path = require('path');
-var canvas = Canvas.createCanvas(200, 200);
-var ctx = canvas.getContext('2d', { pixelFormat: 'A8' });
+const { createCanvas, loadImage } = require('canvas');
+const fs = require('fs');
+const AES256 = require('./models/aes256_model.js');
 
-// Matches the "fillStyle" browser test, made by manipulating imageData
-var palette = new Uint8ClampedArray(37 * 4);
-var k = 0;
-var i, j;
-// First value is opaque ;white:
-palette[k++] = 255;
-palette[k++] = 255;
-palette[k++] = 255;
-palette[k++] = 255;
-for (i = 0; i < 6; i++) {
-  for (j = 0; j < 6; j++) {
-    palette[k++] = Math.floor(255 - 42.5 * i);
-    palette[k++] = Math.floor(255 - 42.5 * j);
-    palette[k++] = 0;
-    palette[k++] = 255;
-  }
-}
-var idata = ctx.getImageData(0, 0, 200, 200);
-for (i = 0; i < 6; i++) {
-  for (j = 0; j < 6; j++) {
-    var index = j * 6 + i;
-    // fill rect:
-    for (var xr = j * 25; xr < j * 25 + 25; xr++) {
-      for (var yr = i * 25; yr < i * 25 + 25; yr++) {
-        idata.data[xr * 200 + yr] = index + 1;
-      }
-    }
-  }
-}
-ctx.putImageData(idata, 0, 0);
+const out = fs.createWriteStream('./imgD.png');
 
-canvas.createPNGStream({ palette: palette })
-  .pipe(fs.createWriteStream(path.join(__dirname, 'indexed.png')));
+const AES = new AES256('sha256', 'aes-256-ecb');
+
+const canvas = createCanvas(100, 100);
+const ctx = canvas.getContext('2d');
+
+// Draw cat with lime helmet
+loadImage('./img.png').then((image) => {
+  ctx.drawImage(image, 0, 0, 100, 100);
+  let imgData = ctx.getImageData(0, 0, 100, 100);
+
+  let buf = Buffer.from(imgData.data);
+
+  let ae = aes(buf, true);
+  
+  let arr = new Uint8ClampedArray(ae);
+
+  for (var i = 0; i < imgData.data.length; i += 4) {
+    imgData.data[i + 0] = arr[i + 0];
+    imgData.data[i + 1] = arr[i + 1];
+    imgData.data[i + 2] = arr[i + 2];
+    imgData.data[i + 3] = arr[i + 3];
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+
+  const stream = canvas.createPNGStream();
+  stream.pipe(out);
+  out.on('finish', () => console.log('The PNG file was created.'));
+});
+
+let aes = (data, dohash) => {
+
+  let sourceKey = 1.63;
+  if (dohash) {
+    AES.setKey(sourceKey.toFixed(6));
+  } else {
+    AES.setNoHashKey(sourceKey.toFixed(6));
+  }
+  let encdata = AES.encryp(data);
+  return encdata;
+};

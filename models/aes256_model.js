@@ -28,7 +28,7 @@ class AES256 {
     let privateData = _aesParam.get(this);
     // hash 混沌產生值 轉成對稱金鑰
     let hash = crypto.createHash(privateData.hashMode);
-    privateData.key = hash.update(chaosData).digest('hex');
+    privateData.key = hash.update(chaosData).digest();
     return privateData.key;
   }
 
@@ -45,11 +45,15 @@ class AES256 {
   encryp(data) {
     let privateData = _aesParam.get(this);
     // aes256-ecb加密 
-    let aes256Enc = crypto.createCipher(privateData.aesMode, privateData.key);
-    let sendData = aes256Enc.update(data, 'utf8', 'hex');
+    let aes256Enc = crypto.createCipher(privateData.aesMode, privateData.key).setAutoPadding(false);
+    let sendData = aes256Enc.update(data);
 
-    sendData += aes256Enc.final('hex');
-
+    try {
+      // sendData += aes256Enc.final();
+      sendData = Buffer.concat([sendData, aes256Enc.final()]);
+    } catch (e) {
+      return 'error';
+    }
     return sendData;
   }
 
@@ -60,11 +64,12 @@ class AES256 {
   decryp(data) {
     let privateData = _aesParam.get(this);
     //aes256-ecb 解密
-    let aes256Dec = crypto.createDecipher(privateData.aesMode, privateData.key);
-    let getData = aes256Dec.update(data, 'hex', 'utf8');
+    let aes256Dec = crypto.createDecipher(privateData.aesMode, privateData.key).setAutoPadding(false);
+    let getData = aes256Dec.update(data);
 
     try {
-      getData += aes256Dec.final('utf8');
+      //getData += aes256Dec.final();
+      getData = Buffer.concat([getData, aes256Dec.final()]);
     } catch (e) {
       return 'error';
     }
