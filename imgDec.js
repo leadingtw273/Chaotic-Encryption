@@ -26,13 +26,6 @@ rChaosStream.on('readable', () => {
 
     let cry = crypt(chunk,count,true);
 
-    console.log('============================');
-    console.log(chunk);
-    console.log(chunk.length);
-    console.log('--------------------');
-    console.log(cry);
-    console.log(cry.length);
-
     if(chunk.length%16 != 0){
       wChaosImgStream.write(chunk);
     }else{

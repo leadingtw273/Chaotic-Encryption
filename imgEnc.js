@@ -19,7 +19,6 @@ const wChaosImgStream = fs.createWriteStream('./cryptFile/enc/' + outputChaosFil
 let count = 0;
 let chunk = '';
 readStream.on('readable', () => {
-
   while (null !== (chunk = readStream.read(16))) {
     count++;
 

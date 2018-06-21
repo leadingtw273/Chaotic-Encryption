@@ -21,6 +21,12 @@
       "request": "launch",
       "name": "測試速度",
       "program": "${workspaceFolder}\\speedTest.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "測試",
+      "program": "${workspaceFolder}\\imgDec2.1.js"
     }
   ]
 }

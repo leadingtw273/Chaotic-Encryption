@@ -52,7 +52,7 @@ class AES256 {
       // sendData += aes256Enc.final();
       sendData = Buffer.concat([sendData, aes256Enc.final()]);
     } catch (e) {
-      return 'error';
+      throw e;
     }
     return sendData;
   }
@@ -71,7 +71,7 @@ class AES256 {
       //getData += aes256Dec.final();
       getData = Buffer.concat([getData, aes256Dec.final()]);
     } catch (e) {
-      return 'error';
+      throw e;
     }
 
     return getData;

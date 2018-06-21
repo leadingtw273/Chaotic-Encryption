@@ -1,8 +1,7 @@
-const fs = require('fs');
-const streamifier = require('streamifier');
-const { createCanvas, loadImage } = require('canvas');
-const Chaos = require('./models/HENMAP_chaos_model.js');
+const jimp = require('jimp');
 const AES256 = require('./models/aes256_model.js');
+const Chaos = require('./models/HENMAP_chaos_model.js');
+const streamifier = require('streamifier');
 
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('sha256', 'aes-256-ecb');
@@ -11,41 +10,37 @@ const fileName = 'img';
 const fileExtension = '.png';
 
 const inputFileName = fileName + fileExtension;
-const outputAesFileName = 'enc_aes_' + inputFileName;
-const outputChaosFileName = 'enc_chaos_' + inputFileName;
 
-const wAesImgStream = fs.createWriteStream('./cryptFile/enc/' + outputAesFileName);
-const wChaosImgStream = fs.createWriteStream('./cryptFile/enc/' + outputChaosFileName);
+const inputPath = './cryptFile/org/';
+const outputPath = './cryptFile/enc/';
 
-loadImage('./cryptFile/org/' + inputFileName).then((image) => {
+jimp.read(inputPath + inputFileName, (err, img) => {
+  if (err) throw err;
 
-  const canvas = createCanvas(100, 100);
-  const ctx = canvas.getContext('2d');
+  console.log(img.bitmap.data);
 
-  ctx.drawImage(image, 0, 0, 100, 100);
-  let imgData = ctx.getImageData(0, 0, 100, 100);
-
-  let buf = Buffer.from(imgData.data);
-
-  const readStream = streamifier.createReadStream(buf);
-
-  let count = 0;
+  const readStream = streamifier.createReadStream(img.bitmap.data);
   let chunk = '';
+  let count = 0;
   let aesBuf = Buffer.alloc(0);
   let cryptBuf = Buffer.alloc(0);
   readStream.on('readable', () => {
     while (null !== (chunk = readStream.read(16))) {
       count++;
 
-      let cry = crypt(chunk, count, true);
-      let ae = aes(chunk, true);
-
-      // console.log('==================================');
       // console.log(chunk);
-      // console.log(chunk.length);
-      // console.log('--------------------');
-      // console.log(cry);
-      // console.log(cry.length);
+      // let nChunk = chunk.filter((data, index) => {
+      //   if ((index + 1) % 4 == 0 ) {
+      //     return false;
+      //   } else {
+      //     return true;
+      //   }
+      // });
+      // console.log(nChunk);
+      // console.log(nChunk.length);
+
+      let ae = aes(chunk, true);
+      let cry = crypt(chunk, count, true);
 
       if (chunk.length % 16 != 0) {
         aesBuf = Buffer.concat([aesBuf, chunk]);
@@ -58,39 +53,43 @@ loadImage('./cryptFile/org/' + inputFileName).then((image) => {
     }
   });
   readStream.on('end', () => {
-
-    writePng(image, aesBuf, wAesImgStream);
-    writePng(image, cryptBuf, wChaosImgStream);
-
+    console.log(aesBuf);
+    console.log(cryptBuf);
+    img.bitmap.data = aesBuf;
+    img.write(outputPath + 'enc_aes_' + inputFileName);
+    img.bitmap.data = cryptBuf;
+    img.write(outputPath + 'enc_chaos_' + inputFileName);
   });
-  readStream.on('error', err => console.log(err.strck));
+
+  // let count = 0;
+  // let aesBuf = this.bitmap.data;
+  // let cryptBuf = this.bitmap.data;
+  // img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
+  //   count++;
+
+  //   let ae = aes(chunk, true);
+  //   let cry = crypt(chunk, count, true);
+
+  //   if (chunk.length % 16 != 0) {
+  //     aesBuf = Buffer.concat([aesBuf, chunk]);
+  //     cryptBuf = Buffer.concat([cryptBuf, chunk]);
+  //   } else {
+  //     aesBuf = Buffer.concat([aesBuf, ae]);
+  //     cryptBuf = Buffer.concat([cryptBuf, cry]);
+  //   }
+
+  //   let red = this.bitmap.data[idx + 0];
+  //   let green = this.bitmap.data[idx + 1];
+  //   let blue = this.bitmap.data[idx + 2];
+  //   let alpha = this.bitmap.data[idx + 3];
+
+  //   if (x == img.bitmap.width - 1 &&
+  //     y == img.bitmap.height - 1) {
+  //     // image scan finished, do your stuff   
+  //   }
+  // });
 
 });
-
-let writePng = (image, dataBuf, writeStream) => {
-  const canvas = createCanvas(100, 100);
-  const ctx = canvas.getContext('2d');
-
-  ctx.drawImage(image, 0, 0, 100, 100);
-  let imgData = ctx.getImageData(0, 0, 100, 100);
-
-  let dataArr = new Uint8ClampedArray(dataBuf);
-
-
-  for (let i = 0; i < imgData.data.length; i += 4) {
-    imgData.data[i + 0] = dataArr[i + 0];
-    imgData.data[i + 1] = dataArr[i + 1];
-    imgData.data[i + 2] = dataArr[i + 2];
-    imgData.data[i + 3] = dataArr[i + 3];
-  }
-
-  ctx.putImageData(imgData, 0, 0);
-  const stream = canvas.createPNGStream();
-  stream.pipe(writeStream);
-  writeStream.on('error', err => console.log(err.stack));
-  writeStream.on('finish', () => console.log('The PNG file was created.'));
-
-};
 
 let X = [0.5, -0.3, 0.4];
 let crypt = (data, i, dohash) => {
