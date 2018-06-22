@@ -2,55 +2,53 @@ const crypto = require('crypto');
 
 let _aesParam = new WeakMap();
 
-class AES256 {
+class AES {
 
   /**
-   * AES256 的 constructor
-   * @param {string} hash hash模式
+   * AES 的 constructor
    * @param {string} aes aes模式
+   * @param {string} hash hash模式
    */
-  constructor(hash, aes) {
+  constructor(aes, ...opt) {
     _aesParam.set(this, {
-      hashMode: '',
-      aesMode: '',
-      key: ''
+      aesMode: aes,
+      hashMode: (opt[0]) ? opt[0] : null,
+      iv: (opt[1]) ? opt[1] : null,
     });
-    let privateData = _aesParam.get(this);
-    privateData.hashMode = hash;
-    privateData.aesMode = aes;
   }
 
   /**
    * 將傳入值進行hash運算
-   * @param {string} chaosData 傳入值
+   * @param {string} crptKey 傳入值
    */
-  setKey(chaosData) {
+  setKey(crptKey) {
     let privateData = _aesParam.get(this);
     // hash 混沌產生值 轉成對稱金鑰
-    let hash = crypto.createHash(privateData.hashMode);
-    privateData.key = hash.update(chaosData).digest();
-    return privateData.key;
-  }
-
-  setNoHashKey(chaosData) {
-    let privateData = _aesParam.get(this);
-    privateData.key = chaosData;
-    return privateData.key;
+    if (null != privateData.hashMode) {
+      let hash = crypto.createHash(privateData.hashMode);
+      return hash.update(crptKey).digest();
+    } else {
+      return crptKey;
+    }
   }
 
   /**
    * 將傳入值進行AES加密運算
    * @param {*} data 傳入值
    */
-  encryp(data) {
+  encryp(data, key) {
     let privateData = _aesParam.get(this);
-    // aes256-ecb加密 
-    let aes256Enc = crypto.createCipher(privateData.aesMode, privateData.key).setAutoPadding(false);
-    let sendData = aes256Enc.update(data);
-
+    let aes256Enc = null;
+    let sendData = Buffer.alloc(16);
     try {
-      // sendData += aes256Enc.final();
+      if (privateData.iv == null) {
+        aes256Enc = crypto.createCipher(privateData.aesMode, this.setKey(key)).setAutoPadding(false);
+      } else {
+        aes256Enc = crypto.createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv).setAutoPadding(false);
+      }
+      sendData = aes256Enc.update(data);
       sendData = Buffer.concat([sendData, aes256Enc.final()]);
+
     } catch (e) {
       throw e;
     }
@@ -61,21 +59,24 @@ class AES256 {
    * 將傳入值進行AES解密運算
    * @param {*} data 傳入值
    */
-  decryp(data) {
+  decryp(data, key) {
     let privateData = _aesParam.get(this);
-    //aes256-ecb 解密
-    let aes256Dec = crypto.createDecipher(privateData.aesMode, privateData.key).setAutoPadding(false);
-    let getData = aes256Dec.update(data);
+    let aes256Dec = null;
+    let getData = Buffer.alloc(16);
 
     try {
-      //getData += aes256Dec.final();
+      if (privateData.iv == null) {
+        aes256Dec = crypto.createDecipher(privateData.aesMode, this.setKey(key)).setAutoPadding(false);
+      } else {
+        aes256Dec = crypto.createDecipher(privateData.aesMode, this.setKey(key), privateData.iv).setAutoPadding(false);
+      }
+      getData = aes256Dec.update(data);
       getData = Buffer.concat([getData, aes256Dec.final()]);
     } catch (e) {
       throw e;
     }
-
     return getData;
   }
 }
 
-module.exports = AES256;
+module.exports = AES;
