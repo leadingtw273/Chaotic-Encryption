@@ -6,7 +6,7 @@ const streamifier = require('streamifier');
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('aes-256-ecb');
 
-const fileName = 'img01';
+const fileName = 'img25';
 const fileExtension = '.png';
 
 const inputFileName = fileName + fileExtension;
@@ -25,7 +25,7 @@ jimp.read(inputAesPath + '/aes/' + inputFileName, (err, img) => {
   let aesBuf = Buffer.alloc(0);
   readStream.on('readable', () => {
     let chunk = '';
-    while (null !== (chunk = readStream.read(160))) {
+    while (null !== (chunk = readStream.read(16))) {
 
       let ae = aes(chunk);
 
@@ -54,7 +54,7 @@ jimp.read(inputChaosPath + '/chaos/' + inputFileName, (err, img) => {
   let cryptBuf = Buffer.alloc(0);
   readStream.on('readable', () => {
     let chunk = '';
-    while (null !== (chunk = readStream.read(160))) {
+    while (null !== (chunk = readStream.read(16))) {
       count++;
 
       let cry = crypt(chunk, count);
