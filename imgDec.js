@@ -6,7 +6,7 @@ const streamifier = require('streamifier');
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('aes-256-ecb');
 
-const fileName = 'img25';
+const fileName = 'img32';
 const fileExtension = '.png';
 
 const inputFileName = fileName + fileExtension;
