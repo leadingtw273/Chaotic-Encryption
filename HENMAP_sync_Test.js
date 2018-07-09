@@ -1,6 +1,8 @@
 const Chaos = require('./models/HENMAP_chaos_model.js');
 const AES256 = require('./models/aes256_model');
 
+// 模組變更 等待修改
+
 // 執行次數
 const N = 100;
 
@@ -41,7 +43,6 @@ client.setModulation([1, 1, 1], [0, 0, 0]);
 
 startTime = new Date().getTime();
 for (let i = 1; i <= N; i++) {
-
   let Uk = server.createUk(X, Y);
   // 主端 CLIENT
   Um = client.createUm(X);
@@ -63,16 +64,33 @@ for (let i = 1; i <= N; i++) {
   if (sendData.length != 0) {
     clientAES.setKey(X[0].toFixed(4));
     getData = clientAES.decryp(sendData);
-    (getData == 'error') ? errorCount++ : succsCount++;
+    getData == 'error' ? errorCount++ : succsCount++;
   }
 
-  console.log(`(- ${(X[0] - Y[0]).toFixed(6)}), Um = ${Um.toFixed(6)}, Us = ${Us.toFixed(6)}, Uk = ${Uk.toFixed(6)}`);
+  console.log(
+    `(- ${(X[0] - Y[0]).toFixed(6)}), Um = ${Um.toFixed(6)}, Us = ${Us.toFixed(
+      6
+    )}, Uk = ${Uk.toFixed(6)}`
+  );
   console.log(`X1(${i}) = ${X[0].toFixed(6)}`);
   console.log(`Y1(${i}) = ${Y[0].toFixed(6)}`);
-  console.log('----------------------------------------------------------------------------------------');
+  console.log(
+    '----------------------------------------------------------------------------------------'
+  );
 }
 endTime = new Date().getTime();
 
-console.log(`執行次數: ${N}, 同步次數: ${syncCount}, 同步比: ${(syncCount / N) * 100} %`);
-console.log(`錯誤次數: ${errorCount}, 成功次數: ${succsCount}, 錯誤率: ${(errorCount / (errorCount + succsCount) * 100).toFixed(2)} %`);
-console.log(`執行總時間: ${(endTime - startTime) / 1000} Sec, 同步所需時間: ${(syncTime - startTime) / 1000} Sec`);
+console.log(
+  `執行次數: ${N}, 同步次數: ${syncCount}, 同步比: ${(syncCount / N) * 100} %`
+);
+console.log(
+  `錯誤次數: ${errorCount}, 成功次數: ${succsCount}, 錯誤率: ${(
+    (errorCount / (errorCount + succsCount)) *
+    100
+  ).toFixed(2)} %`
+);
+console.log(
+  `執行總時間: ${(endTime - startTime) / 1000} Sec, 同步所需時間: ${(syncTime -
+    startTime) /
+    1000} Sec`
+);
