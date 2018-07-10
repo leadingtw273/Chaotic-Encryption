@@ -6,7 +6,7 @@ const streamifier = require('streamifier');
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 const AES = new AES256('aes-256-ecb');
 
-const fileName = 'img32';
+const fileName = 'img22';
 const fileExtension = '.png';
 
 const inputFileName = fileName + fileExtension;
@@ -26,7 +26,6 @@ jimp.read(inputAesPath + '/aes/' + inputFileName, (err, img) => {
   readStream.on('readable', () => {
     let chunk = '';
     while (null !== (chunk = readStream.read(16))) {
-
       let ae = aes(chunk);
 
       if (chunk.length % 16 != 0) {
@@ -34,14 +33,12 @@ jimp.read(inputAesPath + '/aes/' + inputFileName, (err, img) => {
       } else {
         aesBuf = Buffer.concat([aesBuf, ae]);
       }
-
     }
   });
   readStream.on('end', () => {
     img.bitmap.data = aesBuf;
     img.write(outputAesPath + '/aes/' + inputFileName);
   });
-
 });
 
 jimp.read(inputChaosPath + '/chaos/' + inputFileName, (err, img) => {
@@ -64,19 +61,16 @@ jimp.read(inputChaosPath + '/chaos/' + inputFileName, (err, img) => {
       } else {
         cryptBuf = Buffer.concat([cryptBuf, cry]);
       }
-
     }
   });
   readStream.on('end', () => {
     img.bitmap.data = cryptBuf;
     img.write(outputChaosPath + '/chaos/' + inputFileName);
   });
-
 });
 
-let X = [0.5, -0.3, 0.4];
+let X = [1.8, -1.5, 0.4];
 let crypt = (data, i) => {
-
   X = chaos.runChaos(i, X);
 
   let buf1 = Buffer.alloc(8);
@@ -89,8 +83,7 @@ let crypt = (data, i) => {
   return encdata;
 };
 
-let aes = (data) => {
-
+let aes = data => {
   let buf1 = Buffer.alloc(8);
   let buf2 = Buffer.alloc(8);
   buf1.writeDoubleBE(0.5);

@@ -16,9 +16,15 @@ const inputPath = './cryptFile/org/';
 const outputAesPath = './cryptFile/enc/';
 const outputChaosPath = './cryptFile/enc/';
 
-for (let i = 0; i < imgNum; i++) {
-  const bufferAesData = fs.createWriteStream('C:/NIST/data/img/bufAesData.txt', { flags: 'a' });
-  const bufferChaosData = fs.createWriteStream('C:/NIST/data/img/bufChaosData.txt', { flags: 'a' });
+for (let i = 22; i < 23; i++) {
+  const bufferAesData = fs.createWriteStream(
+    'C:/NIST/data/img/bufAesData.txt',
+    { flags: 'a' }
+  );
+  const bufferChaosData = fs.createWriteStream(
+    'C:/NIST/data/img/bufChaosData.txt',
+    { flags: 'a' }
+  );
   let inputFileName = fileName + i + fileExtension;
 
   jimp.read(inputPath + inputFileName, (err, img) => {
@@ -45,11 +51,9 @@ for (let i = 0; i < imgNum; i++) {
           aesBuf = Buffer.concat([aesBuf, ae]);
           cryptBuf = Buffer.concat([cryptBuf, cry]);
         }
-
       }
     });
     readStream.on('end', () => {
-
       console.log(aesBuf);
       console.log(aesBuf.length);
       console.log(cryptBuf);
@@ -69,13 +73,11 @@ for (let i = 0; i < imgNum; i++) {
       img.bitmap.data = cryptBuf;
       img.write(outputChaosPath + '/chaos/' + inputFileName);
     });
-
   });
 }
 
-let X = [0.5, -0.3, 0.4];
+let X = [0.18, -1.01, 2.1];
 let crypt = (data, i) => {
-
   X = chaos.runChaos(i, X);
 
   let buf1 = Buffer.alloc(8);
@@ -88,8 +90,7 @@ let crypt = (data, i) => {
   return encdata;
 };
 
-let aes = (data) => {
-
+let aes = data => {
   let buf1 = Buffer.alloc(8);
   let buf2 = Buffer.alloc(8);
   buf1.writeDoubleBE(0.5);

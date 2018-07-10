@@ -7,8 +7,8 @@ const AES256 = require('./models/aes256_model');
 const N = 100;
 
 // 初始值
-let X = [0.5, -0.3, 0.4];
-let Y = [-0.3, -0.1, 0.8];
+let X = [-1.3156345, -1.84, 0.5624];
+let Y = [1.7, -1.9999999, 1.212345];
 
 // 控制器
 let Um = 0;
@@ -32,14 +32,14 @@ let endTime = 0;
 let syncTime = 0;
 
 // 伺服端混沌亂數與AES加密初始化
-const server = new Chaos(0.1, [-0.3, 0.02]);
-const servarAES = new AES256('sha256', 'aes-256-ecb');
-server.setModulation([1, 1, 1], [0, 0, 0]);
+const server = new Chaos(0.01, [-0.3, 0.002]);
+const servarAES = new AES256('aes-256-ecb', 'sha256');
+server.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 
 // 用戶端混沌亂數與AES加密初始化
-const client = new Chaos(0.1, [-0.3, 0.02]);
-const clientAES = new AES256('sha256', 'aes-256-ecb');
-client.setModulation([1, 1, 1], [0, 0, 0]);
+const client = new Chaos(0.01, [-0.3, 0.002]);
+const clientAES = new AES256('aes-256-ecb', 'sha256');
+client.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 
 startTime = new Date().getTime();
 for (let i = 1; i <= N; i++) {
@@ -53,8 +53,10 @@ for (let i = 1; i <= N; i++) {
   Y = server.runSlave(i, Y, Um);
 
   if (server.checkSync(Us, Um)) {
-    servarAES.setKey(Y[0].toFixed(4));
-    sendData = servarAES.encryp(impData);
+    sendData = servarAES.encryp(
+      Buffer.from(impData),
+      Buffer.from(Y[0].toFixed(4))
+    );
     if (syncCount == 0) syncTime = new Date().getTime();
     syncCount++;
   } else {
@@ -62,8 +64,10 @@ for (let i = 1; i <= N; i++) {
   }
 
   if (sendData.length != 0) {
-    clientAES.setKey(X[0].toFixed(4));
-    getData = clientAES.decryp(sendData);
+    getData = clientAES.decryp(
+      Buffer.from(sendData),
+      Buffer.from(X[0].toFixed(4))
+    );
     getData == 'error' ? errorCount++ : succsCount++;
   }
 

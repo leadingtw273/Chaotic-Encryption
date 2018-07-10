@@ -3,7 +3,6 @@ const crypto = require('crypto');
 let _aesParam = new WeakMap();
 
 class AES {
-
   /**
    * AES 的 constructor
    * @param {string} aes aes模式
@@ -12,8 +11,8 @@ class AES {
   constructor(aes, ...opt) {
     _aesParam.set(this, {
       aesMode: aes,
-      hashMode: (opt[0]) ? opt[0] : null,
-      iv: (opt[1]) ? opt[1] : null,
+      hashMode: opt[0] ? opt[0] : null,
+      iv: opt[1] ? opt[1] : null
     });
   }
 
@@ -40,15 +39,23 @@ class AES {
     let privateData = _aesParam.get(this);
     let aes256Enc = null;
     let sendData = Buffer.alloc(16);
+    data = Buffer.concat(
+      [data, Buffer.alloc(16)],
+      (parseInt(data.length / 16) + 1) * 16
+    );
+
     try {
       if (privateData.iv == null) {
-        aes256Enc = crypto.createCipher(privateData.aesMode, this.setKey(key)).setAutoPadding(false);
+        aes256Enc = crypto
+          .createCipher(privateData.aesMode, this.setKey(key))
+          .setAutoPadding(false);
       } else {
-        aes256Enc = crypto.createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv).setAutoPadding(false);
+        aes256Enc = crypto
+          .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv)
+          .setAutoPadding(false);
       }
       sendData = aes256Enc.update(data);
       sendData = Buffer.concat([sendData, aes256Enc.final()]);
-
     } catch (e) {
       throw e;
     }
@@ -66,9 +73,13 @@ class AES {
 
     try {
       if (privateData.iv == null) {
-        aes256Dec = crypto.createDecipher(privateData.aesMode, this.setKey(key)).setAutoPadding(false);
+        aes256Dec = crypto
+          .createDecipher(privateData.aesMode, this.setKey(key))
+          .setAutoPadding(false);
       } else {
-        aes256Dec = crypto.createDecipher(privateData.aesMode, this.setKey(key), privateData.iv).setAutoPadding(false);
+        aes256Dec = crypto
+          .createDecipher(privateData.aesMode, this.setKey(key), privateData.iv)
+          .setAutoPadding(false);
       }
       getData = aes256Dec.update(data);
       getData = Buffer.concat([getData, aes256Dec.final()]);

@@ -26,7 +26,7 @@
       "type": "node",
       "request": "launch",
       "name": "測試",
-      "program": "${workspaceFolder}\\imgEnc.js"
+      "program": "${workspaceFolder}\\HENMAP_sync_Test.js"
     }
   ]
 }
