@@ -32,12 +32,12 @@ let endTime = 0;
 let syncTime = 0;
 
 // 伺服端混沌亂數與AES加密初始化
-const server = new Chaos(0.01, [-0.3, 0.002]);
+const server = new Chaos(0, [-0.3, 0.002]);
 const servarAES = new AES256('aes-256-ecb', 'sha256');
 server.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 
 // 用戶端混沌亂數與AES加密初始化
-const client = new Chaos(0.01, [-0.3, 0.002]);
+const client = new Chaos(0, [-0.3, 0.002]);
 const clientAES = new AES256('aes-256-ecb', 'sha256');
 client.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 

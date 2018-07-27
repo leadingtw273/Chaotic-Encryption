@@ -27,6 +27,12 @@
       "request": "launch",
       "name": "測試",
       "program": "${workspaceFolder}\\HENMAP_sync_Test.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "測試lena",
+      "program": "${workspaceFolder}\\lenaImgEnc.js"
     }
   ]
 }

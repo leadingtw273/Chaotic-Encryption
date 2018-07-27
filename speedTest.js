@@ -2,7 +2,7 @@ const AES256 = require('./models/aes256_model');
 const Chaos = require('./models/HENMAP_chaos_model.js');
 const avg = require('./models/avg_model.js');
 
-const AES = new AES256('sha256', 'aes-256-ecb');
+const AES = new AES256('aes-256-ecb', 'sha256');
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 
 let X = [0.5, -0.3, 0.4];
@@ -36,13 +36,17 @@ for (let i = 1; i <= N; i++) {
   try {
 
     Time_ENC_START = process.hrtime();
+
     sourceKey = 0.123456;
     hashKey = AES.setKey(sourceKey.toFixed(6));
-    encData = AES.encryp(data);
+    encData = AES.encryp(Buffer.from(data), Buffer.from(sourceKey.toFixed(6)));
+
     Time_ENC_END = process.hrtime(Time_ENC_START);
 
     Time_DEC_START = process.hrtime();
-    decData = AES.decryp(encData);
+
+    decData = AES.decryp(Buffer.from(encData), Buffer.from(sourceKey.toFixed(6)));
+
     Time_DEC_END = process.hrtime(Time_DEC_START);
 
   }
@@ -68,11 +72,11 @@ for (let i = 1; i <= N; i++) {
     X = chaos.runChaos(i, X);
     sourceKey = X[0];
     hashKey = AES.setKey(sourceKey.toFixed(6));
-    encData = AES.encryp(data);
+    encData = AES.encryp(Buffer.from(data), Buffer.from(sourceKey.toFixed(6)));
     Time_ENC_END = process.hrtime(Time_ENC_START);
 
     Time_DEC_START = process.hrtime();
-    decData = AES.decryp(encData);
+    decData = AES.decryp(Buffer.from(encData), Buffer.from(sourceKey.toFixed(6)));
     Time_DEC_END = process.hrtime(Time_DEC_START);
 
   }
@@ -97,11 +101,11 @@ for (let i = 1; i <= N; i++) {
     Time_ENC_START = process.hrtime();
     sourceKey = Math.random() * 2 - 1;
     hashKey = AES.setKey(sourceKey.toFixed(6));
-    encData = AES.encryp(data);
+    encData = AES.encryp(Buffer.from(data), Buffer.from(sourceKey.toFixed(6)));
     Time_ENC_END = process.hrtime(Time_ENC_START);
 
     Time_DEC_START = process.hrtime();
-    decData = AES.decryp(encData);
+    decData = AES.decryp(Buffer.from(encData), Buffer.from(sourceKey.toFixed(6)));
     Time_DEC_END = process.hrtime(Time_DEC_START);
 
   }
@@ -122,7 +126,7 @@ for (let i = 1; i <= N; i++) {
 
 }
 
-avg.init(N,detN);
+avg.init(N, detN);
 setkeyTime = avg.avgTime(setkeyTime);
 chaosTime = avg.avgTime(chaosTime);
 randomTime = avg.avgTime(randomTime);
