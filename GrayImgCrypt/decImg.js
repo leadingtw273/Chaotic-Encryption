@@ -3,7 +3,10 @@ const streamifier = require('streamifier');
 const AES256 = require('../models/aes256_model.js');
 const Chaos = require('../models/HENMAP_chaos_model.js');
 
-const AES = new AES256('aes-256-ecb');
+const iv = Buffer.from(['0x00', '0x11', '0x22', '0x33', '0x44', '0x55', '0x66', '0x77', '0x88', '0x99', '0xaa', '0xbb', '0xcc', '0xdd', '0xee', '0xff']);
+const AES_CBC = new AES256('aes-256-cbc', 'sha256', iv);
+const AES_ECB = new AES256('aes-256-ecb', 'sha256');
+
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 let X = [0.18, -1.01, 2.1];
 let step = 0;
@@ -22,14 +25,7 @@ const outputPath = './cryptFile/dec/';
 jimp.read(inputPath + '/aes/' + inputFileName, (err, img) => {
   if (err) throw err;
 
-  let orgData = [];
-  let orgBuf = Buffer.alloc(0);
-  img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
-    orgData.push(img.bitmap.data[idx + 0]);
-    if (x == img.bitmap.width - 1 && y == img.bitmap.height - 1) {
-      orgBuf = Buffer.from(orgData);
-    }
-  });
+  const orgBuf = inputImg(img);
 
   let aesBuf = Buffer.alloc(0);
   const readStream = streamifier.createReadStream(orgBuf);
@@ -53,14 +49,7 @@ jimp.read(inputPath + '/aes/' + inputFileName, (err, img) => {
 jimp.read(inputPath + '/chaos/' + inputFileName, (err, img) => {
   if (err) throw err;
 
-  let orgData = [];
-  let orgBuf = Buffer.alloc(0);
-  img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
-    orgData.push(img.bitmap.data[idx + 0]);
-    if (x == img.bitmap.width - 1 && y == img.bitmap.height - 1) {
-      orgBuf = Buffer.from(orgData);
-    }
-  });
+  const orgBuf = inputImg(img);
 
   let chaosBuf = Buffer.alloc(0);
   const readStream = streamifier.createReadStream(orgBuf);
@@ -81,6 +70,18 @@ jimp.read(inputPath + '/chaos/' + inputFileName, (err, img) => {
     outputImg(chaosBuf, img, 'chaos');
   });
 });
+
+const inputImg = (img) => {
+  let orgData = [];
+  let orgBuf = Buffer.alloc(0);
+  img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
+    orgData.push(img.bitmap.data[idx + 0]);
+    if (x == img.bitmap.width - 1 && y == img.bitmap.height - 1) {
+      orgBuf = Buffer.from(orgData);
+    }
+  });
+  return orgBuf;
+};
 
 const outputImg = (data, img, name) => {
   let i = 0;

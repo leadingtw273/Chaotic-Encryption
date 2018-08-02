@@ -39,17 +39,12 @@ class AES {
     let privateData = _aesParam.get(this);
     let aes256Enc = null;
     let sendData = Buffer.alloc(16);
-
     try {
-      if (privateData.iv == null) {
-        aes256Enc = crypto
-          .createCipher(privateData.aesMode, this.setKey(key))
-          .setAutoPadding(false);
-      } else {
-        aes256Enc = crypto
-          .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv)
-          .setAutoPadding(false);
-      }
+
+      aes256Enc = crypto
+        .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
+        .setAutoPadding(false);
+
       sendData = aes256Enc.update(data);
       sendData = Buffer.concat([sendData, aes256Enc.final()]);
     } catch (e) {

@@ -3,8 +3,10 @@ const streamifier = require('streamifier');
 const AES256 = require('../models/aes256_model.js');
 const Chaos = require('../models/HENMAP_chaos_model.js');
 
-//const iv = Buffer.from(['0x00', '0x11', '0x22', '0x33', '0x44', '0x55', '0x66', '0x77', '0x88', '0x99', '0xaa', '0xbb', '0xcc', '0xdd', '0xee', '0xff']);
-const AES = new AES256('aes-256-ecb');
+const iv = Buffer.from(['0x00', '0x11', '0x22', '0x33', '0x44', '0x55', '0x66', '0x77', '0x88', '0x99', '0xaa', '0xbb', '0xcc', '0xdd', '0xee', '0xff']);
+const AES_CBC = new AES256('aes-256-cbc', 'sha256', iv);
+const AES_ECB = new AES256('aes-256-ecb', 'sha256');
+
 const chaos = new Chaos(0.1, [-0.3, 0.02]);
 let X = [0.18, -1.01, 2.1];
 let step = 0;
@@ -13,7 +15,7 @@ while (step < 1000) {
   step++;
 }
 
-const fileName = 'lena256';
+const fileName = 'test';
 const fileExtension = '.png';
 const inputFileName = fileName + fileExtension;
 
@@ -23,6 +25,38 @@ const outputPath = './cryptFile/enc/';
 jimp.read(inputPath + inputFileName, (err, img) => {
   if (err) throw err;
 
+  const orgBuf = inputImg(img);
+
+  const aesKey = X[0];
+  let aesBuf = Buffer.alloc(0);
+  let chaosBuf_ECB = Buffer.alloc(0);
+  let chaosBuf_CBC = Buffer.alloc(0);
+  const readStream = streamifier.createReadStream(orgBuf);
+  readStream.on('readable', () => {
+    let chunk = '';
+    while (null !== (chunk = readStream.read(16))) {
+
+      aesBuf = Buffer.concat([aesBuf, chunk]);
+
+      if (chunk.length % 16 != 0) {
+        chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chunk]);
+        chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chunk]);
+      } else {
+        chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chaosCrypt(chunk, step, AES_ECB)]);
+        chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chaosCrypt(chunk, step, AES_CBC)]);
+      }
+      step++;
+    }
+  });
+  readStream.on('end', () => {
+    outputImg(aesCrypt(aesBuf, aesKey, AES_ECB), img, 'aes_ECB');
+    outputImg(aesCrypt(aesBuf, aesKey, AES_CBC), img, 'aes_CBC');
+    outputImg(chaosBuf_ECB, img, 'chaos_ECB');
+    outputImg(chaosBuf_CBC, img, 'chaos_CBC');
+  });
+});
+
+const inputImg = (img) => {
   let orgData = [];
   let orgBuf = Buffer.alloc(0);
   img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
@@ -31,31 +65,8 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       orgBuf = Buffer.from(orgData);
     }
   });
-
-  let aesBuf = Buffer.alloc(0);
-  let chaosBuf = Buffer.alloc(0);
-  const readStream = streamifier.createReadStream(orgBuf);
-  readStream.on('readable', () => {
-    let chunk = '';
-    while (null !== (chunk = readStream.read(16))) {
-      let ae = aesCrypt(chunk);
-      let cry = chaosCrypt(chunk, step);
-
-      if (chunk.length % 16 != 0) {
-        aesBuf = Buffer.concat([aesBuf, chunk]);
-        chaosBuf = Buffer.concat([chaosBuf, chunk]);
-      } else {
-        aesBuf = Buffer.concat([aesBuf, ae]);
-        chaosBuf = Buffer.concat([chaosBuf, cry]);
-      }
-      step++;
-    }
-  });
-  readStream.on('end', () => {
-    outputImg(aesBuf, img, 'aes');
-    outputImg(chaosBuf, img, 'chaos');
-  });
-});
+  return orgBuf;
+};
 
 const outputImg = (data, img, name) => {
   let i = 0;
@@ -70,28 +81,11 @@ const outputImg = (data, img, name) => {
   });
 };
 
-
-const chaosCrypt = (data, i) => {
-  let buf1 = Buffer.alloc(8);
-  let buf2 = Buffer.alloc(8);
-  let sourceKey = Buffer.alloc(16);
-
+const chaosCrypt = (data, i, aesMethod) => {
   X = chaos.runChaos(i, X);
-  buf1.writeDoubleBE(X[0]);
-  buf2.writeDoubleBE(X[1]);
-  sourceKey = Buffer.concat([buf1, buf2], 16);
-
-  return AES.encryp(data, sourceKey);
+  return aesMethod.encryp(data, Buffer.from(new String(X[0])));
 };
 
-const aesCrypt = data => {
-  let buf1 = Buffer.alloc(8);
-  let buf2 = Buffer.alloc(8);
-  let sourceKey = Buffer.alloc(16);
-
-  buf1.writeDoubleBE(0.5);
-  buf2.writeDoubleBE(-0.3);
-  sourceKey = Buffer.concat([buf1, buf2], 16);
-
-  return AES.encryp(data, sourceKey);
+const aesCrypt = (data, key, aesMethod) => {
+  return aesMethod.encryp(data, Buffer.from(new String(key)));
 };
