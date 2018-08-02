@@ -175,8 +175,8 @@ jimp.read(inputPath + inputFileName, (err, img) => {
   });
 
   // HOR: 水平, VER: 垂直, DIA: 斜角
-  // const cca = new CCA({ model: 'VER' });
-  // console.log(cca.r(arrayData));
+  const cca = new CCA({ model: 'VER' });
+  console.log(cca.r(arrayData));
 
   const ie = new IE();
   console.log(ie.H(arrayData));

@@ -39,10 +39,6 @@ class AES {
     let privateData = _aesParam.get(this);
     let aes256Enc = null;
     let sendData = Buffer.alloc(16);
-    data = Buffer.concat(
-      [data, Buffer.alloc(16)],
-      (parseInt(data.length / 16) + 1) * 16
-    );
 
     try {
       if (privateData.iv == null) {

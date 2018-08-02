@@ -96,5 +96,5 @@ console.log(
 console.log(
   `執行總時間: ${(endTime - startTime) / 1000} Sec, 同步所需時間: ${(syncTime -
     startTime) /
-    1000} Sec`
+  1000} Sec`
 );
