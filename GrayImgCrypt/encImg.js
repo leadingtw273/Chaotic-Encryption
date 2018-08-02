@@ -84,7 +84,7 @@ const chaosCrypt = (data, i) => {
   return AES.encryp(data, sourceKey);
 };
 
-let aesCrypt = data => {
+const aesCrypt = data => {
   let buf1 = Buffer.alloc(8);
   let buf2 = Buffer.alloc(8);
   let sourceKey = Buffer.alloc(16);
