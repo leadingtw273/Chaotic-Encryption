@@ -40,7 +40,6 @@ class AES {
     let aes256Enc = null;
     let sendData = Buffer.alloc(16);
     try {
-
       aes256Enc = crypto
         .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
         .setAutoPadding(false);
@@ -61,17 +60,11 @@ class AES {
     let privateData = _aesParam.get(this);
     let aes256Dec = null;
     let getData = Buffer.alloc(16);
-
     try {
-      if (privateData.iv == null) {
-        aes256Dec = crypto
-          .createDecipher(privateData.aesMode, this.setKey(key))
-          .setAutoPadding(false);
-      } else {
-        aes256Dec = crypto
-          .createDecipher(privateData.aesMode, this.setKey(key), privateData.iv)
-          .setAutoPadding(false);
-      }
+      aes256Dec = crypto
+        .createDecipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
+        .setAutoPadding(false);
+
       getData = aes256Dec.update(data);
       getData = Buffer.concat([getData, aes256Dec.final()]);
     } catch (e) {

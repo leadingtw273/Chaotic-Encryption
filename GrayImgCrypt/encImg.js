@@ -15,7 +15,7 @@ while (step < 1000) {
   step++;
 }
 
-const fileName = 'test';
+const fileName = 'lena256';
 const fileExtension = '.png';
 const inputFileName = fileName + fileExtension;
 
@@ -42,10 +42,11 @@ jimp.read(inputPath + inputFileName, (err, img) => {
         chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chunk]);
         chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chunk]);
       } else {
-        chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chaosCrypt(chunk, step, AES_ECB)]);
-        chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chaosCrypt(chunk, step, AES_CBC)]);
+        chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chaosCrypt(chunk, X, AES_ECB)]);
+        chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chaosCrypt(chunk, X, AES_CBC)]);
       }
       step++;
+      X = chaos.runChaos(step, X);
     }
   });
   readStream.on('end', () => {
@@ -81,9 +82,8 @@ const outputImg = (data, img, name) => {
   });
 };
 
-const chaosCrypt = (data, i, aesMethod) => {
-  X = chaos.runChaos(i, X);
-  return aesMethod.encryp(data, Buffer.from(new String(X[0])));
+const chaosCrypt = (data, x, aesMethod) => {
+  return aesMethod.encryp(data, Buffer.from(new String(x[0])));
 };
 
 const aesCrypt = (data, key, aesMethod) => {
