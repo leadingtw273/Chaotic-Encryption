@@ -10,11 +10,11 @@ const reportPath = `./reportFile/${fileName}`; // 分析表存放路徑
 // const typeFile = 'aes_ECB';
 // const typeFile = 'aes_CBC';
 // const typeFile = 'chaos_ECB';
-const typeFile = 'chaos_CBC';
-const inputPath = `./cryptFile/enc/${typeFile}/`;
+// const typeFile = 'chaos_CBC';
+// const inputPath = `./cryptFile/enc/${typeFile}/`;
 
-// const typeFile = 'org';
-// const inputPath = './cryptFile/org/';
+const typeFile = 'org';
+const inputPath = './cryptFile/org/';
 
 let inputFileName = fileName + fileExtension;
 
@@ -25,7 +25,6 @@ jimp.read(inputPath + inputFileName, (err, img) => {
     constructor(args) {
       // HOR: 水平, VER: 垂直, DIA: 斜角
       let def = {
-        model: 'HOR',
         round: 6,
         typeFile: 'default',
         fileName: 'test',
@@ -40,12 +39,6 @@ jimp.read(inputPath + inputFileName, (err, img) => {
         fs.mkdirSync(this.reportPath);
       }
 
-      try {
-        this.reportPath = this.reportPath + '/' + this.model;
-        fs.accessSync(this.reportPath, fs.constants.F_OK);
-      } catch (err) {
-        fs.mkdirSync(this.reportPath);
-      }
     }
     E(arrayData) {
       let sizeX = arrayData[0].length;
@@ -94,42 +87,74 @@ jimp.read(inputPath + inputFileName, (err, img) => {
         let str = JSON.stringify(obj);
         return JSON.parse(str);
       }
-      let dataA = deepCopy(arrayData);
-      let dataB = deepCopy(arrayData);
 
-      // 選擇模式
-      switch (this.model) {
-        case 'HOR':
-          for (let i = 0; i < dataA.length; i++) {
-            dataA[i].pop();
-            dataB[i].shift();
-          }
-          break;
-        case 'VER':
-          dataA.pop();
-          dataB.shift();
-          break;
-        case 'DIA':
-          for (let i = 0; i < dataA.length; i++) {
-            dataA[i].pop();
-            dataB[i].shift();
-          }
-          dataA.pop();
-          dataB.shift();
-          break;
-      }
-
-      // 輸出csv檔
-      let writeStream = fs.createWriteStream(this.reportPath + `/${this.typeFile}_CCA.csv`);
-      writeStream.write(`INDEX,${this.typeFile}_dataA, ${this.typeFile}_dataB \n`);
-      for (let X = 0; X < dataA[0].length; X += 1) {
-        for (let Y = 0; Y < dataA.length; Y += 1) {
-          writeStream.write(`${(X * 256) + Y}, ${dataA[Y][X]}, ${dataB[Y][X]} \n`);
-
+      let Data = {
+        HOR: {
+          A: deepCopy(arrayData),
+          B: deepCopy(arrayData)
+        },
+        VER: {
+          A: deepCopy(arrayData),
+          B: deepCopy(arrayData)
+        },
+        DIA: {
+          A: deepCopy(arrayData),
+          B: deepCopy(arrayData)
         }
+      };
+
+      for (let i = 0; i < 512; i++) {
+        Data.HOR.A[i].pop();
+        Data.HOR.B[i].shift();
+
+        Data.DIA.A[i].pop();
+        Data.DIA.B[i].shift();
       }
 
+      Data.VER.A.pop();
+      Data.VER.B.shift();
+
+      Data.DIA.A.pop();
+      Data.DIA.B.shift();
+
+      const HOR_r = this.compute(Data.HOR.A, Data.HOR.B);
+      const VER_r = this.compute(Data.VER.A, Data.VER.B);
+      const DIA_r = this.compute(Data.DIA.A, Data.DIA.B);
+
+      this.ouputCSV(Data);
+
+      return [HOR_r, VER_r, DIA_r];
+    }
+    compute(dataA, dataB) {
       return (this.cov(dataA, dataB) / (Math.sqrt(this.D(dataA)) * Math.sqrt(this.D(dataB)))).toFixed(this.round);
+    }
+    ouputCSV(Data) {
+      // 輸出csv檔
+      const dataHOR_A = Data.HOR.A.reduce((a, b) => a.concat(b), []);
+      const dataHOR_B = Data.HOR.B.reduce((a, b) => a.concat(b), []);
+      const dataVER_A = Data.VER.A.reduce((a, b) => a.concat(b), []);
+      const dataVER_B = Data.VER.B.reduce((a, b) => a.concat(b), []);
+      const dataDIA_A = Data.DIA.A.reduce((a, b) => a.concat(b), []);
+      const dataDIA_B = Data.DIA.B.reduce((a, b) => a.concat(b), []);
+
+      let writeStream = fs.createWriteStream(this.reportPath + `/${this.typeFile}_CCA.csv`);
+      writeStream.write('INDEX,' +
+        `${this.typeFile}_HOR_dataA,` +
+        `${this.typeFile}_HOR_dataB,` +
+        `${this.typeFile}_VER_dataA,` +
+        `${this.typeFile}_VER_dataB,` +
+        `${this.typeFile}_DIA_dataA,` +
+        `${this.typeFile}_DIA_dataB\n`);
+
+      for (let i = 0; i < (dataHOR_A.length); i++) {
+        writeStream.write(`${i},` +
+          `${(dataHOR_A[i] !== undefined) ? dataHOR_A[i] : ''},` +
+          `${(dataHOR_B[i] !== undefined) ? dataHOR_B[i] : ''},` +
+          `${(dataVER_A[i] !== undefined) ? dataVER_A[i] : ''},` +
+          `${(dataVER_B[i] !== undefined) ? dataVER_B[i] : ''},` +
+          `${(dataDIA_A[i] !== undefined) ? dataDIA_A[i] : ''},` +
+          `${(dataDIA_B[i] !== undefined) ? dataDIA_B[i] : ''}\n`);
+      }
     }
   }
 
@@ -206,15 +231,11 @@ jimp.read(inputPath + inputFileName, (err, img) => {
   }
 
   // HOR: 水平, VER: 垂直, DIA: 斜角
-  const ccaHOR = new CCA({ model: 'HOR', round: 6, typeFile, fileName, reportPath });
-  const ccaVER = new CCA({ model: 'VER', round: 6, typeFile, fileName, reportPath });
-  const ccaDIA = new CCA({ model: 'DIA', round: 6, typeFile, fileName, reportPath });
+  const cca = new CCA({ round: 6, typeFile, fileName, reportPath });
   const ie = new IE({ typeFile, total: imageHW * imageHW, fileName, reportPath });
 
   console.log(typeFile);
-  console.log('CCA_HOR: ', ccaHOR.r(arrayData));
-  console.log('CCA_VER: ', ccaVER.r(arrayData));
-  console.log('CCA_DIA: ', ccaDIA.r(arrayData));
+  console.log('CCA_HOR: ', cca.r(arrayData));
   console.log('IE: ', ie.H(arrayData));
 
   ////////////////////////////////////////////////////////////////////////////////////

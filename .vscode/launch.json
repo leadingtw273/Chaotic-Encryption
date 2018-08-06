@@ -32,7 +32,7 @@
       "type": "node",
       "request": "launch",
       "name": "測試lena",
-      "program": "${workspaceFolder}\\lenaImgEnc.js"
+      "program": "${workspaceFolder}\\GrayImgCrypt\\analysis_Test.js"
     }
   ]
 }
