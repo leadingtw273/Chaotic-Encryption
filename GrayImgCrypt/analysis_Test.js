@@ -1,8 +1,11 @@
 const jimp = require('jimp');
 const fs = require('fs');
 
-const fileName = 'lena256';
+const fileName = 'lena512';
 const fileExtension = '.png';
+
+const imageHW = 512; // 圖片長寬
+const reportPath = `./reportFile/${fileName}`; // 分析表存放路徑
 
 // const typeFile = 'aes_ECB';
 // const typeFile = 'aes_CBC';
@@ -23,10 +26,26 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       // HOR: 水平, VER: 垂直, DIA: 斜角
       let def = {
         model: 'HOR',
-        round: 4,
-        fileName: 'default'
+        round: 6,
+        typeFile: 'default',
+        fileName: 'test',
+        reportPath: './'
       };
       Object.assign(this, def, args);
+
+      try {
+        this.reportPath = this.reportPath + '/CCA';
+        fs.accessSync(this.reportPath, fs.constants.F_OK);
+      } catch (err) {
+        fs.mkdirSync(this.reportPath);
+      }
+
+      try {
+        this.reportPath = this.reportPath + '/' + this.model;
+        fs.accessSync(this.reportPath, fs.constants.F_OK);
+      } catch (err) {
+        fs.mkdirSync(this.reportPath);
+      }
     }
     E(arrayData) {
       let sizeX = arrayData[0].length;
@@ -101,8 +120,8 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       }
 
       // 輸出csv檔
-      let writeStream = fs.createWriteStream(`./reportFile/CCA/${this.fileName}_CCA.csv`);
-      writeStream.write(`INDEX,${this.fileName}_dataA, ${this.fileName}_dataB \n`);
+      let writeStream = fs.createWriteStream(this.reportPath + `/${this.typeFile}_CCA.csv`);
+      writeStream.write(`INDEX,${this.typeFile}_dataA, ${this.typeFile}_dataB \n`);
       for (let X = 0; X < dataA[0].length; X += 1) {
         for (let Y = 0; Y < dataA.length; Y += 1) {
           writeStream.write(`${(X * 256) + Y}, ${dataA[Y][X]}, ${dataB[Y][X]} \n`);
@@ -120,9 +139,17 @@ jimp.read(inputPath + inputFileName, (err, img) => {
         total: 256 * 256,
         GRAYSCALE: 256,
         round: 6,
-        fileName: 'default'
+        typeFile: 'default',
+        reportPath: './'
       };
       Object.assign(this, def, args);
+
+      try {
+        this.reportPath = this.reportPath + '/IE';
+        fs.accessSync(this.reportPath, fs.constants.F_OK);
+      } catch (err) {
+        fs.mkdirSync(this.reportPath);
+      }
     }
     P(m) {
       return (m / this.total).toFixed(this.round);
@@ -147,8 +174,8 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       });
 
       // 輸出csv檔
-      let writeStream = fs.createWriteStream(`./reportFile/IE/${this.fileName}_IE.csv`);
-      writeStream.write(`${this.fileName}_gray_value, ${this.fileName}_count \n`);
+      let writeStream = fs.createWriteStream(this.reportPath + `/${this.typeFile}.csv`);
+      writeStream.write(`${this.typeFile}_gray_value, ${this.typeFile}_count \n`);
       arr.forEach((ele, index) => {
         writeStream.write(`${index}, ${ele} \n`);
       });
@@ -160,9 +187,9 @@ jimp.read(inputPath + inputFileName, (err, img) => {
   ////////////////////////////////////////////////////////////////////////////////////
 
   // 宣告圖片二維陣列
-  let arrayData = new Array(256);
-  for (let i = 0; i < 256; i++) {
-    arrayData[i] = new Array(256);
+  let arrayData = new Array(imageHW);
+  for (let i = 0; i < imageHW; i++) {
+    arrayData[i] = new Array(imageHW);
   }
 
   // 掃描整張圖片取出像素
@@ -171,11 +198,23 @@ jimp.read(inputPath + inputFileName, (err, img) => {
     // console.log(`total: ${(idx / (512 * 512 * 4) * 100).toFixed(3)} %, idx: ${ idx }, [x, y]: [${ x }, ${ y }], gray: ${ img.bitmap.data[idx + 0] } `);
   });
 
-  console.log(typeFile);
+  // 建立資料夾
+  try {
+    fs.accessSync(reportPath, fs.constants.F_OK);
+  } catch (err) {
+    fs.mkdirSync(reportPath);
+  }
+
   // HOR: 水平, VER: 垂直, DIA: 斜角
-  const cca = new CCA({ model: 'DIA', round: 6, fileName: typeFile });
-  console.log('CCA: ', cca.r(arrayData));
-  const ie = new IE({ fileName: typeFile });
+  const ccaHOR = new CCA({ model: 'HOR', round: 6, typeFile, fileName, reportPath });
+  const ccaVER = new CCA({ model: 'VER', round: 6, typeFile, fileName, reportPath });
+  const ccaDIA = new CCA({ model: 'DIA', round: 6, typeFile, fileName, reportPath });
+  const ie = new IE({ typeFile, total: imageHW * imageHW, fileName, reportPath });
+
+  console.log(typeFile);
+  console.log('CCA_HOR: ', ccaHOR.r(arrayData));
+  console.log('CCA_VER: ', ccaVER.r(arrayData));
+  console.log('CCA_DIA: ', ccaDIA.r(arrayData));
   console.log('IE: ', ie.H(arrayData));
 
   ////////////////////////////////////////////////////////////////////////////////////

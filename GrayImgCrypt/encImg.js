@@ -15,7 +15,7 @@ while (step < 1000) {
   step++;
 }
 
-const fileName = 'lena256';
+const fileName = 'lena512';
 const fileExtension = '.png';
 const inputFileName = fileName + fileExtension;
 

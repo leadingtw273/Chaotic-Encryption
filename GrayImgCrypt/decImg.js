@@ -17,7 +17,7 @@ while (step < 1000) {
 }
 aesKey = X[0];
 
-const fileName = 'lena256';
+const fileName = 'lena512';
 const fileExtension = '.png';
 const inputFileName = fileName + fileExtension;
 
