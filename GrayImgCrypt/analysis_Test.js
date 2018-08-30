@@ -10,11 +10,11 @@ const reportPath = `./reportFile/${fileName}`; // 分析表存放路徑
 // const typeFile = 'aes_ECB';
 // const typeFile = 'aes_CBC';
 // const typeFile = 'chaos_ECB';
-// const typeFile = 'chaos_CBC';
-// const inputPath = `./cryptFile/enc/${typeFile}/`;
+const typeFile = 'chaos_CBC';
+const inputPath = `./cryptFile/enc/${typeFile}/`;
 
-const typeFile = 'org';
-const inputPath = './cryptFile/org/';
+// const typeFile = 'org';
+// const inputPath = `./cryptFile/${typeFile}/`;
 
 let inputFileName = fileName + fileExtension;
 
@@ -117,13 +117,19 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       Data.DIA.A.pop();
       Data.DIA.B.shift();
 
-      const HOR_r = this.compute(Data.HOR.A, Data.HOR.B);
-      const VER_r = this.compute(Data.VER.A, Data.VER.B);
-      const DIA_r = this.compute(Data.DIA.A, Data.DIA.B);
+      const HOR = this.compute(Data.HOR.A, Data.HOR.B);
+      const VER = this.compute(Data.VER.A, Data.VER.B);
+      const DIA = this.compute(Data.DIA.A, Data.DIA.B);
+
+      const rData = {
+        HOR,
+        VER,
+        DIA
+      };
 
       this.ouputCSV(Data);
 
-      return [HOR_r, VER_r, DIA_r];
+      return rData;
     }
     compute(dataA, dataB) {
       return (this.cov(dataA, dataB) / (Math.sqrt(this.D(dataA)) * Math.sqrt(this.D(dataB)))).toFixed(this.round);
@@ -138,13 +144,7 @@ jimp.read(inputPath + inputFileName, (err, img) => {
       const dataDIA_B = Data.DIA.B.reduce((a, b) => a.concat(b), []);
 
       let writeStream = fs.createWriteStream(this.reportPath + `/${this.typeFile}_CCA.csv`);
-      writeStream.write('INDEX,' +
-        `${this.typeFile}_HOR_dataA,` +
-        `${this.typeFile}_HOR_dataB,` +
-        `${this.typeFile}_VER_dataA,` +
-        `${this.typeFile}_VER_dataB,` +
-        `${this.typeFile}_DIA_dataA,` +
-        `${this.typeFile}_DIA_dataB\n`);
+      writeStream.write('INDEX,HOR_dataA,HOR_dataB,VER_dataA,VER_dataB,DIA_dataA,DIA_dataB\n');
 
       for (let i = 0; i < (dataHOR_A.length); i++) {
         writeStream.write(`${i},` +

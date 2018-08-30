@@ -7,7 +7,7 @@ const AES256 = require('./models/aes256_model');
 const N = 100;
 
 // 初始值
-let X = [-1.3156345, -1.84, 0.5624];
+let X = [0.054199, 0.213309, -0.602458];
 let Y = [1.7, -1.9999999, 1.212345];
 
 // 控制器
@@ -32,12 +32,12 @@ let endTime = 0;
 let syncTime = 0;
 
 // 伺服端混沌亂數與AES加密初始化
-const server = new Chaos(0, [-0.3, 0.002]);
+const server = new Chaos(0.00001, [-0.0001, 0.0001]);
 const servarAES = new AES256('aes-256-ecb', 'sha256');
 server.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 
 // 用戶端混沌亂數與AES加密初始化
-const client = new Chaos(0, [-0.3, 0.002]);
+const client = new Chaos(0.00001, [-0.0001, 0.0001]);
 const clientAES = new AES256('aes-256-ecb', 'sha256');
 client.setModulation([1, 1.4, 1.2], [0, 1, 0]);
 

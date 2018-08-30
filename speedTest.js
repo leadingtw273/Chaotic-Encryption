@@ -2,10 +2,11 @@ const AES256 = require('./models/aes256_model');
 const Chaos = require('./models/HENMAP_chaos_model.js');
 const avg = require('./models/avg_model.js');
 
-const AES = new AES256('aes-256-ecb', 'sha256');
-const chaos = new Chaos(0.1, [-0.3, 0.02]);
+const iv = Buffer.from(['0x00', '0x11', '0x22', '0x33', '0x44', '0x55', '0x66', '0x77', '0x88', '0x99', '0xaa', '0xbb', '0xcc', '0xdd', '0xee', '0xff']);
+const AES = new AES256('aes-256-cbc', 'sha256', iv);
 
-let X = [0.5, -0.3, 0.4];
+const chaos = new Chaos(0.00001, [-0.0001, 0.0001]);
+let X = [0.054199, 0.213309, -0.602458];
 
 const N = 100;
 const detN = 0.1;

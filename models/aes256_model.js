@@ -39,6 +39,9 @@ class AES {
     let privateData = _aesParam.get(this);
     let aes256Enc = null;
     let sendData = Buffer.alloc(16);
+    while (data.length % 16 != 0) {
+      data = Buffer.concat([data, Buffer.alloc(1)]);
+    }
     try {
       aes256Enc = crypto
         .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
