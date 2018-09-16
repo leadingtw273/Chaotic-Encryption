@@ -5,8 +5,6 @@ let _aesParam = new WeakMap();
 class AES {
   /**
    * AES 的 constructor
-   * @param {string} aes aes模式
-   * @param {string} hash hash模式
    */
   constructor(aes, ...opt) {
     _aesParam.set(this, {
@@ -18,7 +16,6 @@ class AES {
 
   /**
    * 將傳入值進行hash運算
-   * @param {string} crptKey 傳入值
    */
   setKey(crptKey) {
     let privateData = _aesParam.get(this);
@@ -33,7 +30,6 @@ class AES {
 
   /**
    * 將傳入值進行AES加密運算
-   * @param {*} data 傳入值
    */
   encryp(data, key) {
     let privateData = _aesParam.get(this);
@@ -44,7 +40,11 @@ class AES {
     }
     try {
       aes256Enc = crypto
-        .createCipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
+        .createCipheriv(
+          privateData.aesMode,
+          this.setKey(key),
+          privateData.iv || ''
+        )
         .setAutoPadding(false);
 
       sendData = aes256Enc.update(data);
@@ -57,7 +57,6 @@ class AES {
 
   /**
    * 將傳入值進行AES解密運算
-   * @param {*} data 傳入值
    */
   decryp(data, key) {
     let privateData = _aesParam.get(this);
@@ -65,7 +64,11 @@ class AES {
     let getData = Buffer.alloc(16);
     try {
       aes256Dec = crypto
-        .createDecipheriv(privateData.aesMode, this.setKey(key), privateData.iv || '')
+        .createDecipheriv(
+          privateData.aesMode,
+          this.setKey(key),
+          privateData.iv || ''
+        )
         .setAutoPadding(false);
 
       getData = aes256Dec.update(data);
