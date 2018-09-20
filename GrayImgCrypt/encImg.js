@@ -77,7 +77,8 @@ jimp.read(inputPath + inputFileName, (err, img) => {
 
       // CBC 區塊加密
       cbcXorData = xor(cbcXorData, chunk); // 執行XOR運算，此為CBC
-      const chunk_CBC_data = dataCrypt(cbcXorData, chaosKey, AES_ECB);
+      cbcXorData = dataCrypt(cbcXorData, chaosKey, AES_ECB);
+      const chunk_CBC_data = cbcXorData;
 
       // 將密文區塊串接
       chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chunk_ECB_data]);

@@ -7,8 +7,8 @@ const fileExtension = '.png';
 const imageHW = 512; // 圖片長寬
 const reportPath = `./reportFile/${fileName}`; // 分析表存放路徑
 
-const typeFile = 'aes_ECB';
-// const typeFile = 'aes_CBC';
+// const typeFile = 'aes_ECB';
+const typeFile = 'aes_CBC';
 // const typeFile = 'chaos_ECB';
 // const typeFile = 'chaos_CBC';
 const inputPath = `./cryptFile/enc/${typeFile}/`;
