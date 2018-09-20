@@ -1,5 +1,4 @@
 const jimp = require('jimp');
-const fs = require('fs');
 const streamifier = require('streamifier');
 const AES256 = require('./models/aes256_model.js');
 const Chaos = require('./models/HENMAP_chaos_model.js');
@@ -27,118 +26,91 @@ const AES_CBC = new AES256('aes-256-cbc', 'sha256', iv);
 const AES_ECB = new AES256('aes-256-ecb', 'sha256');
 
 // henon map 混沌系統模組實作
+const CHAOS_INIT_VALUE = [0.123, 0.456, 0.789];
+const CHAOS_INIT_STEP = 1000;
 const chaos = new Chaos(0.1, [0.2, 0.3]);
-const chaosInitValue = [0.123, 0.456, 0.789];
-const chaosInitStep = 1000;
 
 // 圖片檔名設置
-const imgNum = 50;
-const fileName = 'img';
+const fileName = 'img0';
 const fileExtension = '.png';
+const inputFileName = fileName + fileExtension;
 
 // 圖片路徑設置
 const inputPath = './cryptFile/org/';
 const outputPath = './cryptFile/enc/';
 
-// 混沌初始值跑 timeStep 次數 避免初始影響
-const chaosInit = (y, timeStep) => {
+// 排除初始影響
+const chaosInit = (initValue, timeStep) => {
   let step = 0;
+  let finValue = initValue;
   while (step < timeStep) {
-    y = chaos.runChaos(step, y);
+    finValue = chaos.runChaos(step, finValue);
     step++;
   }
-  return y;
+  return finValue;
 };
-let X = chaosInit(chaosInitValue, chaosInitStep);
 
-// AES金鑰設置
-const aesKey = chaosInitValue[0];
+// CHAOS 金鑰設置 使用[let]代表其值將會隨成是執行而改變
+let chaosKey = chaosInit(CHAOS_INIT_VALUE, CHAOS_INIT_STEP);
+// AES金鑰設置 使用[const]代表其值將無法做任何改變
+const aesKey = chaosInit(CHAOS_INIT_VALUE, CHAOS_INIT_STEP);
 
-// 主要加密程式執行
-for (let i = 0; i < imgNum; i++) {
-  const inputFileName = fileName + i + fileExtension;
-  let step = chaosInitStep;
+// 讀取圖像像素
+jimp.read(inputPath + inputFileName, (err, img) => {
+  if (err) throw err;
 
-  jimp.read(inputPath + inputFileName, (err, img) => {
-    if (err) throw err;
+  // 取得原圖像素buffer
+  const orgPixBuf = inputImg(img);
 
-    const orgBuf = inputImg(img);
+  // AES加密
+  const aesBuf_ECB = dataCrypt(orgPixBuf, aesKey, AES_ECB);
+  const aesBuf_CBC = dataCrypt(orgPixBuf, aesKey, AES_CBC);
 
-    let aesBuf = Buffer.alloc(0);
-    let chaosBuf_ECB = Buffer.alloc(0);
-    let chaosBuf_CBC = Buffer.alloc(0);
-    const readStream = streamifier.createReadStream(orgBuf);
-    readStream.on('readable', () => {
-      let chunk = '';
-      while (null !== (chunk = readStream.read(16))) {
-        aesBuf = Buffer.concat([aesBuf, chunk]);
+  // 改良式AES加密
+  let chaosBuf_ECB = Buffer.alloc(0);
+  let chaosBuf_CBC = Buffer.alloc(0);
+  let chaosStep = CHAOS_INIT_STEP;
+  let cbcXorData = iv;
 
-        chaosBuf_ECB = Buffer.concat([
-          chaosBuf_ECB,
-          chaosCrypt(chunk, X, AES_ECB)
-        ]);
-        chaosBuf_CBC = Buffer.concat([
-          chaosBuf_CBC,
-          chaosCrypt(chunk, X, AES_CBC)
-        ]);
+  // 創建讀取資料流
+  const readStream = streamifier.createReadStream(orgPixBuf);
 
-        step++;
-        X = chaos.runChaos(step, X);
-      }
-    });
-    readStream.on('end', () => {
-      const aesBuf_ECB = aesCrypt(aesBuf, aesKey, AES_ECB);
-      const aesBuf_CBC = aesCrypt(aesBuf, aesKey, AES_CBC);
+  readStream.on('readable', () => {
+    let chunk = '';
+    // 明文區塊分割，每16byte(128bit)
+    while (null !== (chunk = readStream.read(16))) {
+      // ECB 區塊加密
+      const chunk_ECB_data = dataCrypt(chunk, chaosKey, AES_ECB);
 
-      console.log(inputFileName + ' fin');
+      // CBC 區塊加密
+      cbcXorData = xor(cbcXorData, chunk); // 執行XOR運算，此為CBC
+      const chunk_CBC_data = dataCrypt(cbcXorData, chaosKey, AES_ECB);
 
-      nistOutput({
-        aesBuf_ECB,
-        aesBuf_CBC,
-        chaosBuf_ECB,
-        chaosBuf_CBC
-      });
+      // 將密文區塊串接
+      chaosBuf_ECB = Buffer.concat([chaosBuf_ECB, chunk_ECB_data]);
+      chaosBuf_CBC = Buffer.concat([chaosBuf_CBC, chunk_CBC_data]);
 
-      X = chaosInit(chaosInitValue, 1000);
-
-      outputImg(aesBuf_ECB, img, 'aes_ECB', inputFileName);
-      outputImg(aesBuf_CBC, img, 'aes_CBC', inputFileName);
-      outputImg(chaosBuf_ECB, img, 'chaos_ECB', inputFileName);
-      outputImg(chaosBuf_CBC, img, 'chaos_CBC', inputFileName);
-    });
+      // 混沌金鑰運算
+      chaosStep++;
+      chaosKey = chaos.runChaos(chaosStep, chaosKey);
+    }
   });
-}
 
-// NIST 數值資料產出
-const nistOutput = dataBuf => {
-  const NIST_AES_ECB_DATA = fs.createWriteStream(
-    'C:/NIST/data/img/NIST_AES_ECB_DATA.txt',
-    { flags: 'a' }
-  );
-  const NIST_AES_CBC_DATA = fs.createWriteStream(
-    'C:/NIST/data/img/NIST_AES_CBC_DATA.txt',
-    { flags: 'a' }
-  );
-  const NIST_CHAOS_ECB_DATA = fs.createWriteStream(
-    'C:/NIST/data/img/NIST_CHAOS_ECB_DATA.txt',
-    { flags: 'a' }
-  );
-  const NIST_CHAOS_CBC_DATA = fs.createWriteStream(
-    'C:/NIST/data/img/NIST_CHAOS_CBC_DATA.txt',
-    { flags: 'a' }
-  );
+  readStream.on('end', () => {
+    // 測試算法是否正確
+    // console.log(inputFileName + ' fin');
+    // console.log(aesBuf_ECB.equals(chaosBuf_ECB));
+    // console.log(aesBuf_CBC.equals(chaosBuf_CBC));
 
-  NIST_AES_ECB_DATA.write(dataBuf.aesBuf_ECB);
-  NIST_AES_ECB_DATA.end();
-  NIST_AES_CBC_DATA.write(dataBuf.aesBuf_CBC);
-  NIST_AES_CBC_DATA.end();
-  NIST_CHAOS_ECB_DATA.write(dataBuf.chaosBuf_ECB);
-  NIST_CHAOS_ECB_DATA.end();
-  NIST_CHAOS_CBC_DATA.write(dataBuf.chaosBuf_CBC);
-  NIST_CHAOS_CBC_DATA.end();
-};
+    // 輸出圖像檔
+    outputImg(aesBuf_ECB, img, 'aes_ECB', inputFileName);
+    outputImg(aesBuf_CBC, img, 'aes_CBC', inputFileName);
+    outputImg(chaosBuf_ECB, img, 'chaos_ECB', inputFileName);
+    outputImg(chaosBuf_CBC, img, 'chaos_CBC', inputFileName);
+  });
+});
 
-// 取得圖片上像素RGB數值
+// 取得圖片上像素資料
 const inputImg = img => {
   let orgData = [];
   let orgBuf = Buffer.alloc(0);
@@ -167,12 +139,24 @@ const outputImg = (data, img, name, inputFileName) => {
   });
 };
 
-// 混沌加密Function
-const chaosCrypt = (data, x, aesMethod) => {
-  return aesMethod.encryp(data, Buffer.from(new String(x[0])));
+// XOR運算
+const xor = (a, b) => {
+  if (!Buffer.isBuffer(a)) a = new Buffer(a);
+  if (!Buffer.isBuffer(b)) b = new Buffer(b);
+  const res = [];
+  if (a.length > b.length) {
+    for (let i = 0; i < b.length; i++) {
+      res.push(a[i] ^ b[i]);
+    }
+  } else {
+    for (let i = 0; i < a.length; i++) {
+      res.push(a[i] ^ b[i]);
+    }
+  }
+  return new Buffer(res);
 };
 
-// AES加密Function
-const aesCrypt = (data, key, aesMethod) => {
-  return aesMethod.encryp(data, Buffer.from(new String(key)));
+// 加密Function
+const dataCrypt = (data, key, aesMethod) => {
+  return aesMethod.encryp(data, Buffer.from(new String(key[0])));
 };

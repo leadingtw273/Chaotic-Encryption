@@ -31,7 +31,7 @@ const chaosInitValue = [0.123, 0.456, 0.789];
 const chaosInitStep = 1000;
 
 // 圖片檔名設置
-const fileName = 'img4';
+const fileName = 'img0';
 const fileExtension = '.png';
 const inputFileName = fileName + fileExtension;
 
@@ -100,26 +100,32 @@ jimp.read(inputPath + '/chaos_ECB/' + inputFileName, (err, img) => {
 jimp.read(inputPath + '/chaos_CBC/' + inputFileName, (err, img) => {
   if (err) throw err;
 
-  const orgBuf = inputImg(img);
-  let X_CBC = Array.from(X);
-  let step = chaosInitStep;
+  cbcBuf(inputImg(img), (buf, chaosArr) => {
+    const orgBuf = buf;
 
-  let chaosBuf_CBC = Buffer.alloc(0);
-  const readStream = streamifier.createReadStream(orgBuf);
-  readStream.on('readable', () => {
-    let chunk = '';
-    while (null !== (chunk = readStream.read(16))) {
-      chaosBuf_CBC = Buffer.concat([
-        chaosBuf_CBC,
-        chaosCrypt(chunk, X_CBC, AES_CBC)
-      ]);
+    let chaosBuf_CBC = Buffer.alloc(0);
+    let i = 0;
+    let tmp = Buffer.alloc(0);
 
-      step++;
-      X_CBC = chaos.runChaos(step, X_CBC);
-    }
-  });
-  readStream.on('end', () => {
-    outputImg(chaosBuf_CBC, img, 'chaos_CBC');
+    const readStream = streamifier.createReadStream(orgBuf);
+    readStream.on('readable', () => {
+      let chunk = '';
+      while (null !== (chunk = readStream.read(16))) {
+        if (i >= chaosArr.length) {
+          tmp = xor(tmp, chunk);
+          chaosBuf_CBC = Buffer.concat([xor(tmp, chunk), chaosBuf_CBC]);
+        } else {
+          tmp = xor(tmp, chunk);
+          chaosBuf_CBC = Buffer.concat([xor(tmp, chunk), chaosBuf_CBC]);
+        }
+        tmp = chaosCrypt(chunk, chaosArr[i], AES_ECB);
+
+        i += 1;
+      }
+    });
+    readStream.on('end', () => {
+      outputImg(chaosBuf_CBC, img, 'chaos_CBC');
+    });
   });
 });
 
@@ -149,6 +155,45 @@ const outputImg = (data, img, name) => {
       img.write(`${outputPath}/${name}/${inputFileName}`);
     }
     i += 3;
+  });
+};
+
+const xor = (a, b) => {
+  if (!Buffer.isBuffer(a)) a = new Buffer(a);
+  if (!Buffer.isBuffer(b)) b = new Buffer(b);
+  const res = [];
+  if (a.length > b.length) {
+    for (let i = 0; i < b.length; i++) {
+      res.push(a[i] ^ b[i]);
+    }
+  } else {
+    for (let i = 0; i < a.length; i++) {
+      res.push(a[i] ^ b[i]);
+    }
+  }
+  return new Buffer(res);
+};
+
+const cbcBuf = (buf, cb) => {
+  let reBuf = Buffer.alloc(0);
+
+  let step = chaosInitStep;
+  let X_CBC = Array.from(X);
+  let chaosKey = [];
+
+  const readStream = streamifier.createReadStream(buf);
+  readStream.on('readable', () => {
+    let chunk = '';
+    while (null !== (chunk = readStream.read(16))) {
+      reBuf = Buffer.concat([chunk, reBuf]);
+
+      step++;
+      X_CBC = chaos.runChaos(step, X_CBC);
+      chaosKey.push(X_CBC);
+    }
+  });
+  readStream.on('end', () => {
+    cb(reBuf, chaosKey.reverse());
   });
 };
 
